@@ -42,7 +42,7 @@ class NodeData:
         return self.data_type.id == other.data_type.id
 
 
-class NodeDataModel(QObject, Serializable):
+class NodeDataModel(Serializable, QObject):
     name: Optional[str] = None
     caption: Optional[str] = None
     caption_visible = True

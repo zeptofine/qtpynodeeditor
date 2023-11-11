@@ -7,8 +7,8 @@ classifiers = [ "Development Status :: 2 - Pre-Alpha", "Natural Language :: Engl
 description = "Python Qt node editor"
 dynamic = [ "version", "readme", "dependencies", "optional-dependencies", "optional-dependencies",]
 keywords = []
-name = "qtpynodeeditor"
-requires-python = ">=3.9"
+name = "pyside6nodeeditor"
+requires-python = ">=3.11"
 [[project.authors]]
 name = "Ken Lauer"
 
