@@ -24,13 +24,13 @@ class Node(QObject, Serializable):
     _graphics_obj: Optional[NodeGraphicsObject]
 
     def __init__(self, data_model: NodeDataModel):
-        '''
+        """
         A single Node in the scene
 
         Parameters
         ----------
         data_model : NodeDataModel
-        '''
+        """
         super().__init__()
         self._model = data_model
         self._uid = str(uuid.uuid4())
@@ -53,7 +53,7 @@ class Node(QObject, Serializable):
         except AttributeError:
             return False
 
-    def has_any_connection(self, node: 'Node') -> bool:
+    def has_any_connection(self, node: "Node") -> bool:
         """
         Is this node connected to `node` through any port?
 
@@ -66,11 +66,9 @@ class Node(QObject, Serializable):
         -------
         connected : bool
         """
-        return any(self.has_connection_by_port_type(node, port_type)
-                   for port_type in PortType)
+        return any(self.has_connection_by_port_type(node, port_type) for port_type in PortType)
 
-    def has_connection_by_port_type(self, target: 'Node',
-                                    port_type: PortType) -> bool:
+    def has_connection_by_port_type(self, target: "Node", port_type: PortType) -> bool:
         """
         Is this node connected to `target` through an input/output port?
 
@@ -85,14 +83,9 @@ class Node(QObject, Serializable):
         -------
         connected : bool
         """
-        return any(
-            path[-1] == target
-            for path in self.walk_paths_by_port_type(port_type)
-        )
+        return any(path[-1] == target for path in self.walk_paths_by_port_type(port_type))
 
-    def walk_paths_by_port_type(
-        self, port_type: PortType
-    ) -> typing.Generator[tuple["Node", ...], None, None]:
+    def walk_paths_by_port_type(self, port_type: PortType) -> typing.Generator[tuple["Node", ...], None, None]:
         """
         Yields paths to connected nodes by port type
 
@@ -102,29 +95,31 @@ class Node(QObject, Serializable):
             The path to the node
         """
         seen: set[typing.Union[Node, None]]
-        pending: typing.Deque[
-            tuple[list[Node], Node]
-        ]
+        pending: typing.Deque[tuple[list[Node], Node]]
 
         seen = {None}
         pending = collections.deque([([], self)])
 
         if port_type == PortType.output:
+
             def get_connection_nodes(state):
                 for con in state.output_connections:
                     yield con.input_node
+
         elif port_type == PortType.input:
+
             def get_connection_nodes(state):
                 for con in state.input_connections:
                     yield con.output_node
+
         else:
-            raise ValueError(f'Unexpected port_type {port_type}')
+            raise ValueError(f"Unexpected port_type {port_type}")
 
         while pending:
             node_path, node = pending.popleft()
             seen.add(node)
             if node is not self:
-                yield tuple(node_path) + (node, )
+                yield tuple(node_path) + (node,)
 
             node_path = list(node_path) + [node]
             for node in get_connection_nodes(node.state):
@@ -152,8 +147,7 @@ class Node(QObject, Serializable):
         return {
             "id": self._uid,
             "model": self._model.__getstate__(),
-            "position": {"x": self._graphics_obj.pos().x(),
-                         "y": self._graphics_obj.pos().y()}
+            "position": {"x": self._graphics_obj.pos().x(), "y": self._graphics_obj.pos().y()},
         }
 
     def __setstate__(self, state: dict):
@@ -181,10 +175,9 @@ class Node(QObject, Serializable):
         """
         return self._uid
 
-    def react_to_possible_connection(self, reacting_port_type: PortType,
-                                     reacting_data_type: NodeDataType,
-                                     scene_point: QPointF
-                                     ):
+    def react_to_possible_connection(
+        self, reacting_port_type: PortType, reacting_data_type: NodeDataType, scene_point: QPointF
+    ):
         """
         React to possible connection
 
@@ -203,8 +196,7 @@ class Node(QObject, Serializable):
             pos = inverted.map(scene_point)
             self._geometry.dragging_position = pos
         self._graphics_obj.update()
-        self._state.set_reaction(ReactToConnectionState.reacting,
-                                 reacting_port_type, reacting_data_type)
+        self._state.set_reaction(ReactToConnectionState.reacting, reacting_port_type, reacting_data_type)
 
     def reset_reaction_to_connection(self):
         self._state.set_reaction(ReactToConnectionState.not_reacting)
@@ -258,9 +250,9 @@ class Node(QObject, Serializable):
         input_port : int
         """
         if input_port.node is not self:
-            raise ValueError('Port does not belong to this Node')
+            raise ValueError("Port does not belong to this Node")
         elif input_port.port_type != PortType.input:
-            raise ValueError('Port is not an input port')
+            raise ValueError("Port is not an input port")
 
         self._model.set_in_data(node_data, input_port)
 
@@ -352,7 +344,7 @@ class Node(QObject, Serializable):
 
     @property
     def style(self) -> NodeStyle:
-        'Node style'
+        "Node style"
         return self._style
 
     @property
@@ -367,5 +359,4 @@ class Node(QObject, Serializable):
         return self._state
 
     def __repr__(self):
-        return (f'<{self.__class__.__name__} model={self._model} '
-                f'uid={self._uid!r}>')
+        return f"<{self.__class__.__name__} model={self._model} " f"uid={self._uid!r}>"

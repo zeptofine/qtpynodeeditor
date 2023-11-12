@@ -6,13 +6,12 @@ from qtpy.QtGui import QDoubleValidator
 from qtpy.QtWidgets import QApplication, QLabel, QLineEdit, QWidget
 
 import qtpynodeeditor as nodeeditor
-from qtpynodeeditor import (NodeData, NodeDataModel, NodeDataType,
-                            NodeValidationState, Port, PortType)
+from qtpynodeeditor import NodeData, NodeDataModel, NodeDataType, NodeValidationState, Port, PortType
 from qtpynodeeditor.type_converter import TypeConverter
 
 
 class DecimalData(NodeData):
-    'Node data holding a decimal (floating point) number'
+    "Node data holding a decimal (floating point) number"
     data_type = NodeDataType("decimal", "Decimal")
 
     def __init__(self, number: float = 0.0):
@@ -25,16 +24,16 @@ class DecimalData(NodeData):
 
     @property
     def number(self) -> float:
-        'The number data'
+        "The number data"
         return self._number
 
     def number_as_text(self) -> str:
-        'Number as a string'
-        return '%g' % self._number
+        "Number as a string"
+        return "%g" % self._number
 
 
 class IntegerData(NodeData):
-    'Node data holding an integer value'
+    "Node data holding an integer value"
     data_type = NodeDataType("integer", "Integer")
 
     def __init__(self, number: int = 0):
@@ -47,19 +46,19 @@ class IntegerData(NodeData):
 
     @property
     def number(self) -> int:
-        'The number data'
+        "The number data"
         return self._number
 
     def number_as_text(self) -> str:
-        'Number as a string'
+        "Number as a string"
         return str(self._number)
 
 
 class MathOperationDataModel(NodeDataModel):
     caption_visible = True
     num_ports = {
-        'input': 2,
-        'output': 1,
+        "input": 2,
+        "output": 1,
     }
     port_caption_visible = True
     data_type = DecimalData.data_type
@@ -70,17 +69,15 @@ class MathOperationDataModel(NodeDataModel):
         self._number2 = None
         self._result = None
         self._validation_state = NodeValidationState.warning
-        self._validation_message = 'Uninitialized'
+        self._validation_message = "Uninitialized"
 
     @property
     def caption(self):
         return self.name
 
     def _check_inputs(self):
-        number1_ok = (self._number1 is not None and
-                      self._number1.data_type.id in ('decimal', 'integer'))
-        number2_ok = (self._number2 is not None and
-                      self._number2.data_type.id in ('decimal', 'integer'))
+        number1_ok = self._number1 is not None and self._number1.data_type.id in ("decimal", "integer")
+        number2_ok = self._number2 is not None and self._number2.data_type.id in ("decimal", "integer")
 
         if not number1_ok or not number2_ok:
             self._validation_state = NodeValidationState.warning
@@ -90,13 +87,13 @@ class MathOperationDataModel(NodeDataModel):
             return False
 
         self._validation_state = NodeValidationState.valid
-        self._validation_message = ''
+        self._validation_message = ""
         return True
 
     @contextlib.contextmanager
     def _compute_lock(self):
         if not self._number1 or not self._number2:
-            raise RuntimeError('inputs unset')
+            raise RuntimeError("inputs unset")
 
         with self._number1.lock:
             with self._number2.lock:
@@ -105,7 +102,7 @@ class MathOperationDataModel(NodeDataModel):
         self.data_updated.emit(0)
 
     def out_data(self, port: int) -> NodeData:
-        '''
+        """
         The output data as a result of this calculation
 
         Parameters
@@ -115,18 +112,18 @@ class MathOperationDataModel(NodeDataModel):
         Returns
         -------
         value : NodeData
-        '''
+        """
         return self._result
 
     def set_in_data(self, data: NodeData, port: Port):
-        '''
+        """
         New data at the input of the node
 
         Parameters
         ----------
         data : NodeData
         port_index : int
-        '''
+        """
         if port.index == 0:
             self._number1 = data
         elif port.index == 1:
@@ -155,11 +152,13 @@ class AdditionModel(MathOperationDataModel):
 
 class DivisionModel(MathOperationDataModel):
     name = "Division"
-    port_caption = {'input': {0: 'Dividend',
-                              1: 'Divisor',
-                              },
-                    'output': {0: 'Result'},
-                    }
+    port_caption = {
+        "input": {
+            0: "Dividend",
+            1: "Divisor",
+        },
+        "output": {0: "Result"},
+    }
 
     def compute(self):
         if self._number2.number == 0.0:
@@ -168,18 +167,20 @@ class DivisionModel(MathOperationDataModel):
             self._result = None
         else:
             self._validation_state = NodeValidationState.valid
-            self._validation_message = ''
+            self._validation_message = ""
             self._result = DecimalData(self._number1.number / self._number2.number)
 
 
 class ModuloModel(MathOperationDataModel):
-    name = 'Modulo'
+    name = "Modulo"
     data_type = IntegerData.data_type
-    port_caption = {'input': {0: 'Dividend',
-                              1: 'Divisor',
-                              },
-                    'output': {0: 'Result'},
-                    }
+    port_caption = {
+        "input": {
+            0: "Dividend",
+            1: "Divisor",
+        },
+        "output": {0: "Result"},
+    }
 
     def compute(self):
         if self._number2.number == 0.0:
@@ -191,12 +192,14 @@ class ModuloModel(MathOperationDataModel):
 
 
 class MultiplicationModel(MathOperationDataModel):
-    name = 'Multiplication'
-    port_caption = {'input': {0: 'A',
-                              1: 'B',
-                              },
-                    'output': {0: 'Result'},
-                    }
+    name = "Multiplication"
+    port_caption = {
+        "input": {
+            0: "A",
+            1: "B",
+        },
+        "output": {0: "Result"},
+    }
 
     def compute(self):
         self._result = DecimalData(self._number1.number * self._number2.number)
@@ -205,10 +208,11 @@ class MultiplicationModel(MathOperationDataModel):
 class NumberSourceDataModel(NodeDataModel):
     name = "NumberSource"
     caption_visible = False
-    num_ports = {PortType.input: 0,
-                 PortType.output: 1,
-                 }
-    port_caption = {'output': {0: 'Result'}}
+    num_ports = {
+        PortType.input: 0,
+        PortType.output: 1,
+    }
+    port_caption = {"output": {0: "Result"}}
     data_type = DecimalData.data_type
 
     def __init__(self, style=None, parent=None):
@@ -225,14 +229,14 @@ class NumberSourceDataModel(NodeDataModel):
         return self._number
 
     def save(self) -> dict:
-        'Add to the JSON dictionary to save the state of the NumberSource'
+        "Add to the JSON dictionary to save the state of the NumberSource"
         doc = super().save()
         if self._number:
-            doc['number'] = self._number.number
+            doc["number"] = self._number.number
         return doc
 
     def restore(self, state: dict):
-        'Restore the number from the JSON dictionary'
+        "Restore the number from the JSON dictionary"
         try:
             value = float(state["number"])
         except Exception:
@@ -242,7 +246,7 @@ class NumberSourceDataModel(NodeDataModel):
             self._line_edit.setText(self._number.number_as_text())
 
     def out_data(self, port: int) -> NodeData:
-        '''
+        """
         The data output from this node
 
         Parameters
@@ -252,21 +256,21 @@ class NumberSourceDataModel(NodeDataModel):
         Returns
         -------
         value : NodeData
-        '''
+        """
         return self._number
 
     def embedded_widget(self) -> QWidget:
-        'The number source has a line edit widget for the user to type in'
+        "The number source has a line edit widget for the user to type in"
         return self._line_edit
 
     def on_text_edited(self, string: str):
-        '''
+        """
         Line edit text has changed
 
         Parameters
         ----------
         string : str
-        '''
+        """
         try:
             number = float(self._line_edit.text())
         except ValueError:
@@ -280,10 +284,11 @@ class NumberDisplayModel(NodeDataModel):
     name = "NumberDisplay"
     data_type = DecimalData.data_type
     caption_visible = False
-    num_ports = {PortType.input: 1,
-                 PortType.output: 0,
-                 }
-    port_caption = {'input': {0: 'Number'}}
+    num_ports = {
+        PortType.input: 1,
+        PortType.output: 0,
+    }
+    port_caption = {"input": {0: "Number"}}
 
     def __init__(self, style=None, parent=None):
         super().__init__(style=style, parent=parent)
@@ -291,24 +296,23 @@ class NumberDisplayModel(NodeDataModel):
         self._label = QLabel()
         self._label.setMargin(3)
         self._validation_state = NodeValidationState.warning
-        self._validation_message = 'Uninitialized'
+        self._validation_message = "Uninitialized"
 
     def set_in_data(self, data: NodeData, port: Port):
-        '''
+        """
         New data propagated to the input
 
         Parameters
         ----------
         data : NodeData
         int : int
-        '''
+        """
         self._number = data
-        number_ok = (self._number is not None and
-                     self._number.data_type.id in ('decimal', 'integer'))
+        number_ok = self._number is not None and self._number.data_type.id in ("decimal", "integer")
 
         if number_ok:
             self._validation_state = NodeValidationState.valid
-            self._validation_message = ''
+            self._validation_message = ""
             self._label.setText(self._number.number_as_text())
         else:
             self._validation_state = NodeValidationState.warning
@@ -318,24 +322,23 @@ class NumberDisplayModel(NodeDataModel):
         self._label.adjustSize()
 
     def embedded_widget(self) -> QWidget:
-        'The number display has a label'
+        "The number display has a label"
         return self._label
 
 
 class SubtractionModel(MathOperationDataModel):
     name = "Subtraction"
-    port_caption = {'input': {0: 'Minuend',
-                              1: 'Subtrahend'
-                              },
-                    'output': {0: 'Result'},
-                    }
+    port_caption = {
+        "input": {0: "Minuend", 1: "Subtrahend"},
+        "output": {0: "Result"},
+    }
 
     def compute(self):
         self._result = DecimalData(self._number1.number - self._number2.number)
 
 
 def integer_to_decimal_converter(data: IntegerData) -> DecimalData:
-    '''
+    """
     integer_to_decimal_converter
 
     Parameters
@@ -345,12 +348,12 @@ def integer_to_decimal_converter(data: IntegerData) -> DecimalData:
     Returns
     -------
     value : NodeData
-    '''
+    """
     return DecimalData(float(data.number))
 
 
 def decimal_to_integer_converter(data: DecimalData) -> IntegerData:
-    '''
+    """
     Convert from DecimalDat to IntegerData
 
     Parameters
@@ -360,18 +363,24 @@ def decimal_to_integer_converter(data: DecimalData) -> IntegerData:
     Returns
     -------
     value : IntegerData
-    '''
+    """
     return IntegerData(int(data.number))
 
 
 def main(app):
     registry = nodeeditor.DataModelRegistry()
 
-    models = (AdditionModel, DivisionModel, ModuloModel, MultiplicationModel,
-              NumberSourceDataModel, SubtractionModel, NumberDisplayModel)
+    models = (
+        AdditionModel,
+        DivisionModel,
+        ModuloModel,
+        MultiplicationModel,
+        NumberSourceDataModel,
+        SubtractionModel,
+        NumberDisplayModel,
+    )
     for model in models:
-        registry.register_model(model, category='Operations',
-                                style=None)
+        registry.register_model(model, category="Operations", style=None)
 
     dec_converter = TypeConverter(DecimalData.data_type, IntegerData.data_type, decimal_to_integer_converter)
     int_converter = TypeConverter(IntegerData.data_type, DecimalData.data_type, integer_to_decimal_converter)
@@ -394,37 +403,40 @@ def main(app):
 
     for node_operation in (node_add, node_sub, node_mul, node_div, node_mod):
         node_a = scene.create_node(NumberSourceDataModel)
-        node_a.model.embedded_widget().setText('1.0')
+        node_a.model.embedded_widget().setText("1.0")
         inputs.append(node_a)
 
         node_b = scene.create_node(NumberSourceDataModel)
-        node_b.model.embedded_widget().setText('2.0')
+        node_b.model.embedded_widget().setText("2.0")
         inputs.append(node_b)
 
-        scene.create_connection(node_a[PortType.output][0],
-                                node_operation[PortType.input][0],
-                                )
+        scene.create_connection(
+            node_a[PortType.output][0],
+            node_operation[PortType.input][0],
+        )
 
-        scene.create_connection(node_b[PortType.output][0],
-                                node_operation[PortType.input][1],
-                                )
+        scene.create_connection(
+            node_b[PortType.output][0],
+            node_operation[PortType.input][1],
+        )
 
         node_display = scene.create_node(NumberDisplayModel)
 
-        scene.create_connection(node_operation[PortType.output][0],
-                                node_display[PortType.input][0],
-                                )
+        scene.create_connection(
+            node_operation[PortType.output][0],
+            node_display[PortType.input][0],
+        )
 
     try:
-        scene.auto_arrange(nodes=inputs, layout='bipartite')
+        scene.auto_arrange(nodes=inputs, layout="bipartite")
     except ImportError:
         ...
 
     return scene, view, [node_a, node_b]
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level='DEBUG')
+if __name__ == "__main__":
+    logging.basicConfig(level="DEBUG")
     app = QApplication([])
     scene, view, nodes = main(app)
     view.show()

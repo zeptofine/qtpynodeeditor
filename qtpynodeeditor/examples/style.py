@@ -3,10 +3,9 @@ import logging
 from qtpy import QtWidgets
 
 import qtpynodeeditor
-from qtpynodeeditor import (NodeData, NodeDataModel, NodeDataType, PortType,
-                            StyleCollection)
+from qtpynodeeditor import NodeData, NodeDataModel, NodeDataType, PortType, StyleCollection
 
-style_json = '''
+style_json = """
     {
       "FlowViewStyle": {
         "BackgroundColor": [255, 255, 240],
@@ -43,20 +42,21 @@ style_json = '''
         "UseDataDefinedColors": false
       }
   }
-'''
+"""
 
 
 class MyNodeData(NodeData):
-    data_type = NodeDataType(id='MyNodeData', name='My Node Data')
+    data_type = NodeDataType(id="MyNodeData", name="My Node Data")
 
 
 class MyDataModel(NodeDataModel):
-    name = 'MyDataModel'
-    caption = 'Caption'
+    name = "MyDataModel"
+    caption = "Caption"
     caption_visible = True
-    num_ports = {PortType.input: 3,
-                 PortType.output: 3,
-                 }
+    num_ports = {
+        PortType.input: 3,
+        PortType.output: 3,
+    }
     data_type = MyNodeData.data_type
 
     def out_data(self, port):
@@ -73,7 +73,7 @@ def main(app):
     style = StyleCollection.from_json(style_json)
 
     registry = qtpynodeeditor.DataModelRegistry()
-    registry.register_model(MyDataModel, category='My Category', style=style)
+    registry.register_model(MyDataModel, category="My Category", style=style)
     scene = qtpynodeeditor.FlowScene(style=style, registry=registry)
 
     view = qtpynodeeditor.FlowView(scene)
@@ -84,8 +84,8 @@ def main(app):
     return scene, view, [node]
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level='DEBUG')
+if __name__ == "__main__":
+    logging.basicConfig(level="DEBUG")
     app = QtWidgets.QApplication([])
     scene, view, nodes = main(app)
     view.show()

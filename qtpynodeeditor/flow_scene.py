@@ -21,15 +21,13 @@ from .type_converter import TypeConverter
 
 
 def locate_node_at(scene_point, scene, view_transform):
-    items = scene.items(scene_point, Qt.IntersectsItemShape,
-                        Qt.DescendingOrder, view_transform)
-    filtered_items = [item for item in items
-                      if isinstance(item, NodeGraphicsObject)]
+    items = scene.items(scene_point, Qt.IntersectsItemShape, Qt.DescendingOrder, view_transform)
+    filtered_items = [item for item in items if isinstance(item, NodeGraphicsObject)]
     return filtered_items[0].node if filtered_items else None
 
 
 class FlowSceneModel:
-    '''
+    """
     A model representing a flow scene
 
     Emits the following signals upon connection/node creation/deletion::
@@ -38,7 +36,8 @@ class FlowSceneModel:
         connection_deleted : Signal(Connection)
         node_created : Signal(Node)
         node_deleted : Signal(Node)
-    '''
+    """
+
     connection_created = Signal(Connection)
     connection_deleted = Signal(Connection)
 
@@ -113,22 +112,22 @@ class FlowSceneModel:
     def save(self, file_name=None):
         if file_name is None:
             file_name, _ = QFileDialog.getSaveFileName(
-                None, "Save Flow Scene", QDir.homePath(),
-                "Flow Scene Files (*.flow)")
+                None, "Save Flow Scene", QDir.homePath(), "Flow Scene Files (*.flow)"
+            )
 
         if file_name:
             file_name = str(file_name)
             if not file_name.endswith(".flow"):
                 file_name += ".flow"
 
-            with open(file_name, 'w') as f:
+            with open(file_name, "w") as f:
                 json.dump(self.__getstate__(), f)
 
     def load(self, file_name=None):
         if file_name is None:
             file_name, _ = QFileDialog.getOpenFileName(
-                None, "Open Flow Scene", QDir.homePath(),
-                "Flow Scene Files (*.flow)")
+                None, "Open Flow Scene", QDir.homePath(), "Flow Scene Files (*.flow)"
+            )
 
         if not os.path.exists(file_name):
             return
@@ -199,8 +198,7 @@ class FlowSceneModel:
         ----------
         conn : Connection
         """
-        conn.connection_made_incomplete.connect(
-            self.connection_deleted.emit, Qt.UniqueConnection)
+        conn.connection_made_incomplete.connect(self.connection_deleted.emit, Qt.UniqueConnection)
 
     def _send_connection_created_to_nodes(self, conn: Connection):
         """
@@ -284,7 +282,7 @@ class FlowSceneModel:
                     visited_nodes.append(node)
 
     def to_digraph(self):
-        '''
+        """
         Create a networkx digraph
 
         Returns
@@ -296,15 +294,15 @@ class FlowSceneModel:
         ------
         ImportError
             If networkx is unavailable
-        '''
+        """
         import networkx
+
         graph = networkx.DiGraph()
         for node in self._nodes.values():
             graph.add_node(node)
 
         for node in self._nodes.values():
-            graph.add_edges_from(conn.nodes
-                                 for conn in node.state.all_connections)
+            graph.add_edges_from(conn.nodes for conn in node.state.all_connections)
 
         return graph
 
@@ -342,7 +340,7 @@ class FlowSceneModel:
 
     @contextlib.contextmanager
     def _new_node_context(self, data_model_name, *, emit_placed=False):
-        'Context manager: creates Node/yields it, handling necessary Signals'
+        "Context manager: creates Node/yields it, handling necessary Signals"
         data_model = self._registry.create(data_model_name)
         node = Node(data_model)
         yield node
@@ -402,9 +400,8 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
     node_moved = Signal(Node, QPointF)
     node_dragging = Signal(bool)
 
-    def __init__(self, registry=None, style=None, parent=None,
-                 allow_node_creation=True, allow_node_deletion=True):
-        '''
+    def __init__(self, registry=None, style=None, parent=None, allow_node_creation=True, allow_node_deletion=True):
+        """
         Create a new flow scene
 
         Parameters
@@ -412,7 +409,7 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
         registry : DataModelRegistry, optional
         style : StyleCollection, optional
         parent : QObject, optional
-        '''
+        """
         super().__init__(parent=parent)
         self._registry = registry or self._registry
 
@@ -462,15 +459,15 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
 
     @property
     def style_collection(self) -> style_module.StyleCollection:
-        'The style collection for the scene'
+        "The style collection for the scene"
         return self._style
 
     def locate_node_at(self, point, transform):
         return locate_node_at(point, self, transform)
 
-    def create_connection(self, port_a: Port, port_b: Port = None, *,
-                          converter: TypeConverter = None,
-                          check_cycles=True) -> Connection:
+    def create_connection(
+        self, port_a: Port, port_b: Port = None, *, converter: TypeConverter = None, check_cycles=True
+    ) -> Connection:
         """
         Create a connection
 
@@ -502,13 +499,11 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
             if in_port.data_type.id != out_port.data_type.id:
                 if not converter:
                     # If not specified, try to get it from the registry
-                    converter = self.registry.get_type_converter(out_port.data_type,
-                                                                 in_port.data_type)
-                if (not converter or (converter.type_in != out_port.data_type
-                                      or converter.type_out != in_port.data_type)):
-                    raise ConnectionDataTypeFailure(
-                        f'{in_port.data_type} and {out_port.data_type} are not compatible'
-                    )
+                    converter = self.registry.get_type_converter(out_port.data_type, in_port.data_type)
+                if not converter or (
+                    converter.type_in != out_port.data_type or converter.type_out != in_port.data_type
+                ):
+                    raise ConnectionDataTypeFailure(f"{in_port.data_type} and {out_port.data_type} are not compatible")
         connection = Connection(port_a=port_a, port_b=port_b, style=self._style, converter=converter)
         if port_a is not None:
             port_a.add_connection(connection)
@@ -524,8 +519,7 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
             node_a, node_b = port_a.node, port_b.node
             if node_a.has_connection_by_port_type(node_b, port_b.port_type):
                 raise exceptions.ConnectionCycleFailure(
-                    f'Connecting {node_a} and {node_b} would introduce a '
-                    f'cycle in the graph'
+                    f"Connecting {node_a} and {node_b} would introduce a " f"cycle in the graph"
                 )
 
         cgo = ConnectionGraphicsObject(self, connection)
@@ -541,9 +535,8 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
         return connection
 
     def create_connection_by_index(
-            self, node_in: Node, port_index_in: int,
-            node_out: Node, port_index_out: int,
-            converter: TypeConverter) -> Connection:
+        self, node_in: Node, port_index_in: int, node_out: Node, port_index_out: int, converter: TypeConverter
+    ) -> Connection:
         """
         Create connection
 
@@ -601,9 +594,8 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
             return self._registry.get_type_converter(out_type, in_type)
 
         connection = self.create_connection_by_index(
-            node_in, port_index_in,
-            node_out, port_index_out,
-            converter=get_converter())
+            node_in, port_index_in, node_out, port_index_out, converter=get_converter()
+        )
 
         # Note: the connection_created(...) signal has already been sent by
         # create_connection(...)
@@ -645,29 +637,28 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
             node.__setstate__(node_json)
         return node
 
-    def auto_arrange(self, layout='bipartite', scale=700, align='horizontal',
-                     **kwargs):
-        '''
+    def auto_arrange(self, layout="bipartite", scale=700, align="horizontal", **kwargs):
+        """
         Automatically arrange nodes with networkx, if available
 
         Raises
         ------
         ImportError
             If networkx is unavailable
-        '''
+        """
         import networkx
+
         dig = self.to_digraph()
 
         layouts = {
-            name: getattr(networkx.layout, f'{name}_layout')
-            for name in ('bipartite', 'circular', 'kamada_kawai', 'random',
-                         'shell', 'spring', 'spectral')
+            name: getattr(networkx.layout, f"{name}_layout")
+            for name in ("bipartite", "circular", "kamada_kawai", "random", "shell", "spring", "spectral")
         }
 
         try:
             layout_func = layouts[layout]
         except KeyError:
-            raise ValueError(f'Unknown layout type {layout}') from None
+            raise ValueError(f"Unknown layout type {layout}") from None
 
         layout = layout_func(dig, **kwargs)
         for node, pos in layout.items():
@@ -682,5 +673,4 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
         -------
         value : list of Node
         """
-        return [item.node for item in self.selectedItems()
-                if isinstance(item, NodeGraphicsObject)]
+        return [item.node for item in self.selectedItems() if isinstance(item, NodeGraphicsObject)]

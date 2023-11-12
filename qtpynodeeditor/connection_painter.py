@@ -167,8 +167,7 @@ def draw_normal_line(painter, connection, style):
 
 class ConnectionPainter:
     @staticmethod
-    def paint(painter: QPainter, connection: 'Connection',
-              style: ConnectionStyle):
+    def paint(painter: QPainter, connection: "Connection", style: ConnectionStyle):
         """
         Paint
 

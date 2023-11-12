@@ -33,8 +33,9 @@ class NodePainterDelegate:
 
 class NodePainter:
     @staticmethod
-    def paint(painter: QPainter, node: 'Node', scene: 'FlowScene',
-              node_style: NodeStyle, connection_style: ConnectionStyle):
+    def paint(
+        painter: QPainter, node: "Node", scene: "FlowScene", node_style: NodeStyle, connection_style: ConnectionStyle
+    ):
         """
         Paint
 
@@ -57,18 +58,13 @@ class NodePainter:
         geom.recalculate_size(painter.font())
 
         model = node.model
-        NodePainter.draw_node_rect(painter, geom, model, graphics_object,
-                                   node_style)
-        NodePainter.draw_connection_points(painter, geom, state, model, scene,
-                                           node_style, connection_style)
-        NodePainter.draw_filled_connection_points(painter, geom, state, model,
-                                                  node_style, connection_style
-                                                  )
+        NodePainter.draw_node_rect(painter, geom, model, graphics_object, node_style)
+        NodePainter.draw_connection_points(painter, geom, state, model, scene, node_style, connection_style)
+        NodePainter.draw_filled_connection_points(painter, geom, state, model, node_style, connection_style)
         NodePainter.draw_model_name(painter, geom, state, model, node_style)
         NodePainter.draw_entry_labels(painter, geom, state, model, node_style)
         NodePainter.draw_resize_rect(painter, geom, model)
-        NodePainter.draw_validation_rect(painter, geom, model, graphics_object,
-                                         node_style)
+        NodePainter.draw_validation_rect(painter, geom, model, graphics_object, node_style)
 
         # call custom painter
         painter_delegate = model.painter_delegate()
@@ -76,10 +72,13 @@ class NodePainter:
             painter_delegate.paint(painter, geom, model)
 
     @staticmethod
-    def draw_node_rect(painter: QPainter, geom: NodeGeometry,
-                       model: NodeDataModel,
-                       graphics_object: NodeGraphicsObject,
-                       node_style: NodeStyle):
+    def draw_node_rect(
+        painter: QPainter,
+        geom: NodeGeometry,
+        model: NodeDataModel,
+        graphics_object: NodeGraphicsObject,
+        node_style: NodeStyle,
+    ):
         """
         Draw node rect
 
@@ -91,34 +90,24 @@ class NodePainter:
         graphics_object : NodeGraphicsObject
         node_style : NodeStyle
         """
-        color = (node_style.selected_boundary_color
-                 if graphics_object.isSelected()
-                 else node_style.normal_boundary_color
-                 )
-        p = QPen(color, (node_style.hovered_pen_width
-                         if geom.hovered
-                         else node_style.pen_width))
+        color = node_style.selected_boundary_color if graphics_object.isSelected() else node_style.normal_boundary_color
+        p = QPen(color, (node_style.hovered_pen_width if geom.hovered else node_style.pen_width))
         painter.setPen(p)
 
-        gradient = QLinearGradient(QPointF(0.0, 0.0),
-                                   QPointF(2.0, geom.height))
+        gradient = QLinearGradient(QPointF(0.0, 0.0), QPointF(2.0, geom.height))
         for at_, color in node_style.gradient_colors:
             gradient.setColorAt(at_, color)
         painter.setBrush(gradient)
 
         diam = node_style.connection_point_diameter
-        boundary = QRectF(-diam,
-                          -diam,
-                          2.0 * diam + geom.width,
-                          2.0 * diam + geom.height)
+        boundary = QRectF(-diam, -diam, 2.0 * diam + geom.width, 2.0 * diam + geom.height)
         radius = 3.0
         painter.drawRoundedRect(boundary, radius, radius)
 
     @staticmethod
-    def draw_model_name(painter: QPainter, geom: NodeGeometry,
-                        state: NodeState,
-                        model: NodeDataModel,
-                        node_style: NodeStyle):
+    def draw_model_name(
+        painter: QPainter, geom: NodeGeometry, state: NodeState, model: NodeDataModel, node_style: NodeStyle
+    ):
         """
         Draw model name
 
@@ -136,8 +125,7 @@ class NodePainter:
         f.setBold(True)
         metrics = QFontMetrics(f)
         rect = metrics.boundingRect(name)
-        position = QPointF((geom.width - rect.width()) / 2.0,
-                           (geom.spacing + geom.entry_height) / 3.0)
+        position = QPointF((geom.width - rect.width()) / 2.0, (geom.spacing + geom.entry_height) / 3.0)
         painter.setFont(f)
         painter.setPen(node_style.font_color)
         painter.drawText(position, name)
@@ -145,9 +133,9 @@ class NodePainter:
         painter.setFont(f)
 
     @staticmethod
-    def draw_entry_labels(painter: QPainter, geom: NodeGeometry,
-                          state: NodeState, model: NodeDataModel,
-                          node_style: NodeStyle):
+    def draw_entry_labels(
+        painter: QPainter, geom: NodeGeometry, state: NodeState, model: NodeDataModel, node_style: NodeStyle
+    ):
         """
         Draw entry labels
 
@@ -179,11 +167,15 @@ class NodePainter:
             painter.drawText(scene_pos, display_text)
 
     @staticmethod
-    def draw_connection_points(painter: QPainter, geom: NodeGeometry,
-                               state: NodeState, model: NodeDataModel,
-                               scene: 'FlowScene', node_style: NodeStyle,
-                               connection_style: ConnectionStyle
-                               ):
+    def draw_connection_points(
+        painter: QPainter,
+        geom: NodeGeometry,
+        state: NodeState,
+        model: NodeDataModel,
+        scene: "FlowScene",
+        node_style: NodeStyle,
+        connection_style: ConnectionStyle,
+    ):
         """
         Draw connection points
 
@@ -217,14 +209,10 @@ class NodePainter:
                 type_convertable = registry.get_type_converter(dtype1, dtype2) is not None
                 if dtype1.id == dtype2.id or type_convertable:
                     thres = 40.0
-                    r = ((2.0 - dist / thres)
-                         if dist < thres
-                         else 1.0)
+                    r = (2.0 - dist / thres) if dist < thres else 1.0
                 else:
                     thres = 80.0
-                    r = ((dist / thres)
-                         if dist < thres
-                         else 1.0)
+                    r = (dist / thres) if dist < thres else 1.0
 
             if connection_style.use_data_defined_colors:
                 brush = connection_style.get_normal_color(data_type.id)
@@ -235,12 +223,14 @@ class NodePainter:
             painter.drawEllipse(scene_pos, reduced_diameter * r, reduced_diameter * r)
 
     @staticmethod
-    def draw_filled_connection_points(painter: QPainter, geom: NodeGeometry,
-                                      state: NodeState, model: NodeDataModel,
-                                      node_style: NodeStyle,
-                                      connection_style: ConnectionStyle
-                                      ):
-
+    def draw_filled_connection_points(
+        painter: QPainter,
+        geom: NodeGeometry,
+        state: NodeState,
+        model: NodeDataModel,
+        node_style: NodeStyle,
+        connection_style: ConnectionStyle,
+    ):
         """
         Draw filled connection points
 
@@ -283,10 +273,13 @@ class NodePainter:
             painter.drawEllipse(geom.resize_rect)
 
     @staticmethod
-    def draw_validation_rect(painter: QPainter, geom: NodeGeometry,
-                             model: NodeDataModel,
-                             graphics_object: NodeGraphicsObject,
-                             node_style: NodeStyle):
+    def draw_validation_rect(
+        painter: QPainter,
+        geom: NodeGeometry,
+        model: NodeDataModel,
+        graphics_object: NodeGraphicsObject,
+        node_style: NodeStyle,
+    ):
         """
         Draw validation rect
 
@@ -302,9 +295,7 @@ class NodePainter:
         if model_validation_state == NodeValidationState.valid:
             return
 
-        color = (node_style.selected_boundary_color
-                 if graphics_object.isSelected()
-                 else node_style.normal_boundary_color)
+        color = node_style.selected_boundary_color if graphics_object.isSelected() else node_style.normal_boundary_color
 
         if geom.hovered:
             p = QPen(color, node_style.hovered_pen_width)
@@ -335,10 +326,7 @@ class NodePainter:
         f = painter.font()
         metrics = QFontMetrics(f)
         rect = metrics.boundingRect(error_msg)
-        position = QPointF(
-            (geom.width - rect.width()) / 2.0,
-            geom.height - (geom.validation_height - diam) / 2.0
-        )
+        position = QPointF((geom.width - rect.width()) / 2.0, geom.height - (geom.validation_height - diam) / 2.0)
         painter.setFont(f)
         painter.setPen(node_style.font_color)
         painter.drawText(position, error_msg)

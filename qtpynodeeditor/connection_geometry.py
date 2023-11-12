@@ -26,9 +26,7 @@ class ConnectionGeometry:
         value : QPointF
         """
         assert port_type != PortType.none
-        return (self._out if port_type == PortType.output
-                else self._in
-                )
+        return self._out if port_type == PortType.output else self._in
 
     def set_end_point(self, port_type: PortType, point: QPointF):
         """
@@ -101,17 +99,14 @@ class ConnectionGeometry:
         x_ratio = 0.5
         if x_distance <= 0:
             y_distance = self._in.y() - self._out.y() + 20
-            y_direction = (-1.0 if y_distance < 0 else 1.0)
+            y_direction = -1.0 if y_distance < 0 else 1.0
             y_offset = y_direction * min((default_offset, abs(y_distance)))
             x_ratio = 1.0
 
         x_offset *= x_ratio
         return (
-            QPointF(self._out.x() + x_offset,
-                    self._out.y() + y_offset),
-
-            QPointF(self._in.x() - x_offset,
-                    self._in.y() - y_offset)
+            QPointF(self._out.x() + x_offset, self._out.y() + y_offset),
+            QPointF(self._in.x() - x_offset, self._in.y() - y_offset),
         )
 
     @property

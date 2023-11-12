@@ -10,7 +10,7 @@ from .base import Serializable
 from .enums import ConnectionPolicy, NodeValidationState, PortType
 from .port import Port
 
-NodeDataType = namedtuple('NodeDataType', ('id', 'name'))
+NodeDataType = namedtuple("NodeDataType", ("id", "name"))
 
 
 class NodeData:
@@ -25,7 +25,7 @@ class NodeData:
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         if cls.data_type is None:
-            raise ValueError('Subclasses must set the `data_type` attribute')
+            raise ValueError("Subclasses must set the `data_type` attribute")
 
     def same_type(self, other) -> bool:
         """
@@ -46,9 +46,10 @@ class NodeDataModel(Serializable, QObject):
     name: Optional[str] = None
     caption: Optional[str] = None
     caption_visible = True
-    num_ports = {PortType.input: 1,
-                 PortType.output: 1,
-                 }
+    num_ports = {
+        PortType.input: 1,
+        PortType.output: 1,
+    }
 
     # data_updated and data_invalidated refer to the port index that has
     # changed:
@@ -83,31 +84,27 @@ class NodeDataModel(Serializable, QObject):
 
     @classmethod
     def _verify(cls):
-        '''
+        """
         Verify the data model won't crash in strange spots
         Ensure valid dictionaries:
             - num_ports
             - data_type
             - port_caption
             - port_caption_visible
-        '''
+        """
         num_ports = cls.num_ports
         if isinstance(num_ports, property):
             # Dynamically defined - that's OK, but we can't verify it.
             return
 
-        assert set(num_ports.keys()) == {'input', 'output'}
+        assert set(num_ports.keys()) == {"input", "output"}
 
         # TODO while the end result is nicer, this is ugly; refactor away...
 
         def new_dict(value):
             return {
-                PortType.input: {i: value
-                                 for i in range(num_ports[PortType.input])
-                                 },
-                PortType.output: {i: value
-                                  for i in range(num_ports[PortType.output])
-                                  },
+                PortType.input: {i: value for i in range(num_ports[PortType.input])},
+                PortType.output: {i: value for i in range(num_ports[PortType.output])},
             }
 
         def get_default(attr, default, valid_type):
@@ -121,20 +118,21 @@ class NodeDataModel(Serializable, QObject):
                     # Fill in the dictionary with the user-provided value
                     return current
 
-            if attr == 'data_type' and inspect.isclass(current):
+            if attr == "data_type" and inspect.isclass(current):
                 if issubclass(current, NodeData):
                     return current.data_type
 
             if inspect.ismethod(current) or inspect.isfunction(current):
-                raise ValueError('{} should not be a function; saw: {}\n'
-                                 'Did you forget a @property decorator?'
-                                 ''.format(attr, current))
+                raise ValueError(
+                    "{} should not be a function; saw: {}\n"
+                    "Did you forget a @property decorator?"
+                    "".format(attr, current)
+                )
 
             try:
                 type(default)(current)
             except TypeError:
-                raise ValueError('{} is of an unexpected type: {}'
-                                 ''.format(attr, current)) from None
+                raise ValueError("{} is of an unexpected type: {}" "".format(attr, current)) from None
 
             # Fill in the dictionary with the given value
             return current
@@ -145,51 +143,44 @@ class NodeDataModel(Serializable, QObject):
 
             default = get_default(attr, default, valid_type)
             if default is None:
-                raise ValueError(f'Cannot leave {attr} unspecified')
+                raise ValueError(f"Cannot leave {attr} unspecified")
 
             setattr(cls, attr, new_dict(default))
 
-        fill_defaults('port_caption', '')
-        fill_defaults('port_caption_visible', False)
-        fill_defaults('data_type', None, valid_type=NodeDataType)
+        fill_defaults("port_caption", "")
+        fill_defaults("port_caption_visible", False)
+        fill_defaults("data_type", None, valid_type=NodeDataType)
 
         reasons = []
-        for attr in ('data_type', 'port_caption', 'port_caption_visible'):
+        for attr in ("data_type", "port_caption", "port_caption_visible"):
             try:
                 dct = getattr(cls, attr)
             except AttributeError:
-                reasons.append('{} is missing dictionary: {}'
-                               ''.format(cls.__name__, attr))
+                reasons.append("{} is missing dictionary: {}" "".format(cls.__name__, attr))
                 continue
 
             if isinstance(dct, property):
                 continue
 
-            for port_type in {'input', 'output'}:
+            for port_type in {"input", "output"}:
                 if port_type not in dct:
                     if num_ports[port_type] == 0:
                         dct[port_type] = {}
                     else:
-                        reasons.append('Port type key {}[{!r}] missing'
-                                       ''.format(attr, port_type))
+                        reasons.append("Port type key {}[{!r}] missing" "".format(attr, port_type))
                         continue
 
                 for i in range(num_ports[port_type]):
                     if i not in dct[port_type]:
-                        reasons.append('Port key {}[{!r}][{}] missing'
-                                       ''.format(attr, port_type, i))
+                        reasons.append("Port key {}[{!r}][{}] missing" "".format(attr, port_type, i))
 
         if reasons:
-            reason_text = '\n'.join(f'* {reason}'
-                                    for reason in reasons)
-            raise ValueError(
-                'Verification of NodeDataModel class failed:\n{}'
-                ''.format(reason_text)
-            )
+            reason_text = "\n".join(f"* {reason}" for reason in reasons)
+            raise ValueError("Verification of NodeDataModel class failed:\n{}" "".format(reason_text))
 
     @property
     def style(self):
-        'Style collection for drawing this data model'
+        "Style collection for drawing this data model"
         return self._style
 
     def save(self) -> dict:
@@ -233,7 +224,7 @@ class NodeDataModel(Serializable, QObject):
         -------
         value : QJsonObject
         """
-        doc = {'name': self.name}
+        doc = {"name": self.name}
         doc.update(**self.save())
         return doc
 
@@ -251,8 +242,7 @@ class NodeDataModel(Serializable, QObject):
         -------
         value : NodeDataType
         """
-        raise NotImplementedError(f'Subclass {self.__class__.__name__} must '
-                                  f'implement `data_type`')
+        raise NotImplementedError(f"Subclass {self.__class__.__name__} must " f"implement `data_type`")
 
     def port_out_connection_policy(self, port_index: int) -> ConnectionPolicy:
         """

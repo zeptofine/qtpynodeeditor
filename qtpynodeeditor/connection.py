@@ -19,15 +19,14 @@ class Connection(QObject, Serializable):
     connection_made_incomplete = Signal(QObject)
     updated = Signal(QObject)
 
-    def __init__(self, port_a: Port, port_b: Port = None, *,
-                 style: StyleCollection, converter: TypeConverter = None):
+    def __init__(self, port_a: Port, port_b: Port = None, *, style: StyleCollection, converter: TypeConverter = None):
         super().__init__()
         self._uid = str(uuid.uuid4())
 
         if port_a is None:
-            raise ValueError('port_a is required')
+            raise ValueError("port_a is required")
         elif port_a is port_b:
-            raise ValueError('Cannot connect a port to itself')
+            raise ValueError("Cannot connect a port to itself")
 
         if port_a.port_type == PortType.input:
             in_port = port_a
@@ -38,24 +37,19 @@ class Connection(QObject, Serializable):
 
         if in_port is not None and out_port is not None:
             if in_port.port_type == out_port.port_type:
-                raise exceptions.PortsOfSameTypeError(
-                    'Cannot connect two ports of the same type')
+                raise exceptions.PortsOfSameTypeError("Cannot connect two ports of the same type")
 
-        self._ports = {
-            PortType.input: in_port,
-            PortType.output: out_port
-        }
+        self._ports = {PortType.input: in_port, PortType.output: out_port}
 
         if in_port is not None:
             if in_port.connections:
-                conn, = in_port.connections
+                (conn,) = in_port.connections
                 existing_in, existing_out = conn.ports
                 if existing_in == in_port and existing_out == out_port:
-                    raise exceptions.PortsAlreadyConnectedError(
-                        'Specified ports already connected')
+                    raise exceptions.PortsAlreadyConnectedError("Specified ports already connected")
                 raise exceptions.MultipleInputConnectionError(
-                    f'Maximum one connection per input port '
-                    f'(existing: {conn})')
+                    f"Maximum one connection per input port " f"(existing: {conn})"
+                )
 
         if in_port and out_port:
             self._required_port = PortType.none
@@ -110,12 +104,10 @@ class Connection(QObject, Serializable):
         )
 
         if self._converter:
+
             def get_type_json(type: PortType):
                 node_type = self.data_type(type)
-                return dict(
-                    id=node_type.id,
-                    name=node_type.name
-                )
+                return dict(id=node_type.id, name=node_type.name)
 
             connection_json["converter"] = {
                 "in": get_type_json(PortType.input),
@@ -189,9 +181,7 @@ class Connection(QObject, Serializable):
             attached_port_index = self.get_port_index(attached_port)
             node = self.get_node(attached_port)
             node_scene_transform = node.graphics_object.sceneTransform()
-            pos = node.geometry.port_scene_position(attached_port,
-                                                    attached_port_index,
-                                                    node_scene_transform)
+            pos = node.geometry.port_scene_position(attached_port, attached_port_index, node_scene_transform)
             self._graphics_object.setPos(pos)
 
         self._graphics_object.move()
@@ -205,7 +195,7 @@ class Connection(QObject, Serializable):
         port : Port
         """
         if self._ports[port.port_type] is not None:
-            raise ValueError('Port already specified')
+            raise ValueError("Port already specified")
 
         was_incomplete = not self.is_complete
         self._ports[port.port_type] = port
@@ -286,10 +276,7 @@ class Connection(QObject, Serializable):
 
     @property
     def valid_ports(self):
-        return {port_type: port
-                for port_type, port in self._ports.items()
-                if port is not None
-                }
+        return {port_type: port for port_type, port in self._ports.items() if port is not None}
 
     def data_type(self, port_type: PortType) -> NodeDataType:
         """
@@ -305,12 +292,12 @@ class Connection(QObject, Serializable):
         """
         ports = self.valid_ports
         if not ports:
-            raise ValueError('No ports set')
+            raise ValueError("No ports set")
 
         try:
             return ports[port_type].data_type
         except KeyError:
-            valid_type, = ports
+            (valid_type,) = ports
             return ports[valid_type].data_type
 
     @property
@@ -358,12 +345,12 @@ class Connection(QObject, Serializable):
 
     @property
     def input_node(self) -> Node:
-        'Input node'
+        "Input node"
         return self._ports[PortType.input].node
 
     @property
     def output_node(self) -> Node:
-        'Output node'
+        "Output node"
         return self._ports[PortType.output].node
 
     # For backward-compatibility:
@@ -418,4 +405,4 @@ class Connection(QObject, Serializable):
         return self._required_port != PortType.none
 
     def __repr__(self):
-        return (f'<{self.__class__.__name__} ports={self._ports}>')
+        return f"<{self.__class__.__name__} ports={self._ports}>"

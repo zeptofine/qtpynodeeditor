@@ -11,23 +11,20 @@ if typing.TYPE_CHECKING:
 
 class NodeState:
     def __init__(self, node):
-        '''
+        """
         node_state
 
         Parameters
         ----------
         model : NodeDataModel
-        '''
-        self._ports = {PortType.input: OrderedDict(),
-                       PortType.output: OrderedDict()
-                       }
+        """
+        self._ports = {PortType.input: OrderedDict(), PortType.output: OrderedDict()}
 
         model = node.model
         for port_type in self._ports:
             num_ports = model.num_ports[port_type]
             self._ports[port_type] = OrderedDict(
-                (i, Port(node, port_type=port_type, index=i))
-                for i in range(num_ports)
+                (i, Port(node, port_type=port_type, index=i)) for i in range(num_ports)
             )
 
         self._reaction = ReactToConnectionState.not_reacting
@@ -54,20 +51,12 @@ class NodeState:
     @property
     def output_connections(self):
         """All output connections"""
-        return [
-            connection
-            for idx, port in self._ports[PortType.output].items()
-            for connection in port.connections
-        ]
+        return [connection for idx, port in self._ports[PortType.output].items() for connection in port.connections]
 
     @property
     def input_connections(self):
         """All input connections"""
-        return [
-            connection
-            for idx, port in self._ports[PortType.input].items()
-            for connection in port.connections
-        ]
+        return [connection for idx, port in self._ports[PortType.input].items() for connection in port.connections]
 
     @property
     def all_connections(self):
@@ -89,7 +78,7 @@ class NodeState:
         """
         return list(self._ports[port_type][port_index].connections)
 
-    def erase_connection(self, port_type: PortType, port_index: int, connection: 'Connection'):
+    def erase_connection(self, port_type: PortType, port_index: int, connection: "Connection"):
         """
         Erase connection
 
@@ -134,9 +123,12 @@ class NodeState:
         """
         return self._reacting_data_type
 
-    def set_reaction(self, reaction: ReactToConnectionState,
-                     reacting_port_type: PortType = PortType.none,
-                     reacting_data_type: NodeDataType = None):
+    def set_reaction(
+        self,
+        reaction: ReactToConnectionState,
+        reacting_port_type: PortType = PortType.none,
+        reacting_data_type: NodeDataType = None,
+    ):
         """
         Set reaction
 

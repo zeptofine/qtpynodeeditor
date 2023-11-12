@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
 
 
 class NodeGeometry:
-    def __init__(self, node: 'Node'):
+    def __init__(self, node: "Node"):
         super().__init__()
         self._node = node
         self._model = node.model
@@ -171,9 +171,7 @@ class NodeGeometry:
         -------
         value : QRectF
         """
-        return QRectF(0 - addon, 0 - addon,
-                      self._entry_width + 2 * addon,
-                      self._entry_height + 2 * addon)
+        return QRectF(0 - addon, 0 - addon, self._entry_width + 2 * addon, self._entry_height + 2 * addon)
 
     @property
     def bounding_rect(self) -> QRectF:
@@ -185,8 +183,7 @@ class NodeGeometry:
         value : QRectF
         """
         addon = 4 * self._style.connection_point_diameter
-        return QRectF(0 - addon, 0 - addon,
-                      self._width + 2 * addon, self._height + 2 * addon)
+        return QRectF(0 - addon, 0 - addon, self._width + 2 * addon, self._height + 2 * addon)
 
     def recalculate_size(self, font: QFont = None):
         """
@@ -233,8 +230,7 @@ class NodeGeometry:
         self._width = width
         self._height = height
 
-    def port_scene_position(self, port_type: PortType, index: int,
-                            t: QTransform = None) -> QPointF:
+    def port_scene_position(self, port_type: PortType, index: int, t: QTransform = None) -> QPointF:
         """
         Port scene position
 
@@ -267,8 +263,9 @@ class NodeGeometry:
 
         return t.map(result)
 
-    def check_hit_scene_point(self, port_type: PortType, scene_point: QPointF,
-                              scene_transform: QTransform) -> typing.Optional[Port]:
+    def check_hit_scene_point(
+        self, port_type: PortType, scene_point: QPointF, scene_transform: QTransform
+    ) -> typing.Optional[Port]:
         """
         Check a scene point for a specific port type.
 
@@ -313,10 +310,7 @@ class NodeGeometry:
         value : QRect
         """
         rect_size = 7
-        return QRect(self._width - rect_size,
-                     self._height - rect_size,
-                     rect_size,
-                     rect_size)
+        return QRect(self._width - rect_size, self._height - rect_size, rect_size, rect_size)
 
     @property
     def widget_position(self) -> QPointF:
@@ -334,29 +328,27 @@ class NodeGeometry:
         if widget.sizePolicy().verticalPolicy() == QSizePolicy.PolicyFlag.ExpandFlag:
             # If the widget wants to use as much vertical space as possible,
             # place it immediately after the caption.
-            return QPointF(self._spacing + self.port_width(PortType.input),
-                           self.caption_height)
+            return QPointF(self._spacing + self.port_width(PortType.input), self.caption_height)
 
         if self._model.validation_state() != NodeValidationState.valid:
             return QPointF(
                 self._spacing + self.port_width(PortType.input),
-                (self.caption_height + self._height - self.validation_height -
-                 self._spacing - widget.height()) / 2.0,
+                (self.caption_height + self._height - self.validation_height - self._spacing - widget.height()) / 2.0,
             )
 
         return QPointF(
             self._spacing + self.port_width(PortType.input),
-            (self.caption_height + self._height - widget.height()) / 2.0
+            (self.caption_height + self._height - widget.height()) / 2.0,
         )
 
     def equivalent_widget_height(self) -> int:
-        '''
+        """
         The maximum height a widget can be without causing the node to grow.
 
         Returns
         -------
         value : int
-        '''
+        """
         base_height = self.height - self.caption_height
 
         if self._model.validation_state() != NodeValidationState.valid:
@@ -390,13 +382,14 @@ class NodeGeometry:
 
     @staticmethod
     def calculate_node_position_between_node_ports(
-            target_port_index: int,
-            target_port: PortType,
-            target_node: 'Node',
-            source_port_index: int,
-            source_port: PortType,
-            source_node: 'Node',
-            new_node: 'Node') -> QPointF:
+        target_port_index: int,
+        target_port: PortType,
+        target_node: "Node",
+        source_port_index: int,
+        source_port: PortType,
+        source_node: "Node",
+        new_node: "Node",
+    ) -> QPointF:
         """
         calculate node position between node ports
 
@@ -422,9 +415,8 @@ class NodeGeometry:
         -------
         value : QPointF
         """
-        if (source_node.graphics_object is None
-                or target_node.graphics_object is None):
-            raise ValueError('Uninitialized node')
+        if source_node.graphics_object is None or target_node.graphics_object is None:
+            raise ValueError("Uninitialized node")
         converter_node_pos = (
             source_node.graphics_object.pos()
             + source_node.geometry.port_scene_position(source_port, source_port_index)
@@ -475,13 +467,11 @@ class NodeGeometry:
         -------
         value : int
         """
-        names = [port.display_text
-                 for port in self._node[port_type].values()]
+        names = [port.display_text for port in self._node[port_type].values()]
         if not names:
             return 0
 
-        return max(self._font_metrics.horizontalAdvance(name)
-                   for name in names)
+        return max(self._font_metrics.horizontalAdvance(name) for name in names)
 
     @property
     def size(self):

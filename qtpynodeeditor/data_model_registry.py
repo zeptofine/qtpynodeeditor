@@ -14,16 +14,13 @@ class DataModelRegistry:
         self._item_creators = {}
         self._categories = set()
 
-    def register_model(self, creator, category='', *, style=None, **init_kwargs):
+    def register_model(self, creator, category="", *, style=None, **init_kwargs):
         name = creator.name
-        self._item_creators[name] = (creator, {'style': style, **init_kwargs})
+        self._item_creators[name] = (creator, {"style": style, **init_kwargs})
         self._categories.add(category)
         self._models_category[name] = category
 
-    def register_type_converter(self,
-                                type_in: NodeDataType,
-                                type_out: NodeDataType,
-                                type_converter: TypeConverter):
+    def register_type_converter(self, type_in: NodeDataType, type_out: NodeDataType, type_converter: TypeConverter):
         """
         Register a type converter for a given data type.
 
@@ -39,9 +36,9 @@ class DataModelRegistry:
             The type converter to use for the conversion.
         """
         # TODO typing annotation
-        if hasattr(type_in, 'data_type'):
+        if hasattr(type_in, "data_type"):
             type_in = typing.cast(NodeData, type_in).data_type
-        if hasattr(type_out, 'data_type'):
+        if hasattr(type_out, "data_type"):
             type_out = typing.cast(NodeData, type_out).data_type
 
         self.type_converters[(type_in, type_out)] = type_converter
@@ -67,8 +64,7 @@ class DataModelRegistry:
         cls, kwargs = self.get_model_by_name(model_name)
         return cls(**kwargs)
 
-    def get_model_by_name(self, model_name: str
-                          ) -> tuple[type[NodeDataModel], dict]:
+    def get_model_by_name(self, model_name: str) -> tuple[type[NodeDataModel], dict]:
         """
         Get information on how to create a specific :class:`NodeDataModel`
         node given its user-friendly name.
@@ -93,7 +89,7 @@ class DataModelRegistry:
         try:
             return self._item_creators[model_name]
         except KeyError:
-            raise ValueError(f'Unknown model: {model_name}') from None
+            raise ValueError(f"Unknown model: {model_name}") from None
 
     def registered_model_creators(self) -> dict:
         """

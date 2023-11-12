@@ -2,11 +2,18 @@ import typing
 
 from qtpy.QtCore import QPoint, QRectF, QSize, QSizeF, Qt
 from qtpy.QtGui import QCursor, QPainter
-from qtpy.QtWidgets import (QGraphicsDropShadowEffect, QGraphicsItem,
-                            QGraphicsObject, QGraphicsProxyWidget,
-                            QGraphicsSceneContextMenuEvent,
-                            QGraphicsSceneHoverEvent, QGraphicsSceneMouseEvent,
-                            QSizePolicy, QStyleOptionGraphicsItem, QWidget)
+from qtpy.QtWidgets import (
+    QGraphicsDropShadowEffect,
+    QGraphicsItem,
+    QGraphicsObject,
+    QGraphicsProxyWidget,
+    QGraphicsSceneContextMenuEvent,
+    QGraphicsSceneHoverEvent,
+    QGraphicsSceneMouseEvent,
+    QSizePolicy,
+    QStyleOptionGraphicsItem,
+    QWidget,
+)
 
 from .enums import ConnectionPolicy
 from .node_connection_interaction import NodeConnectionInteraction
@@ -120,10 +127,13 @@ class NodeGraphicsObject(QGraphicsObject):
 
         # TODO
         painter.setClipRect(option.exposedRect)
-        NodePainter.paint(painter, self._node, self._scene,
-                          node_style=self._style.node,
-                          connection_style=self._style.connection,
-                          )
+        NodePainter.paint(
+            painter,
+            self._node,
+            self._scene,
+            node_style=self._style.node,
+            connection_style=self._style.connection,
+        )
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: typing.Any) -> typing.Any:
         """
@@ -162,9 +172,7 @@ class NodeGraphicsObject(QGraphicsObject):
 
         for port_to_check in (PortType.input, PortType.output):
             # TODO do not pass sceneTransform
-            port = node_geometry.check_hit_scene_point(port_to_check,
-                                                       event.scenePos(),
-                                                       self.sceneTransform())
+            port = node_geometry.check_hit_scene_point(port_to_check, event.scenePos(), self.sceneTransform())
             if not port:
                 continue
 
@@ -172,14 +180,14 @@ class NodeGraphicsObject(QGraphicsObject):
 
             # start dragging existing connection
             if connections and port_to_check == PortType.input:
-                conn, = connections
+                (conn,) = connections
                 interaction = NodeConnectionInteraction(self._node, conn, self._scene)
                 interaction.disconnect(port_to_check)
             elif port_to_check == PortType.output:
                 # initialize new Connection
                 out_policy = port.connection_policy
                 if connections and out_policy == ConnectionPolicy.one:
-                    conn, = connections
+                    (conn,) = connections
                     self._scene.delete_connection(conn)
 
                 # TODO_UPSTREAM: add to FlowScene
@@ -289,9 +297,7 @@ class NodeGraphicsObject(QGraphicsObject):
         """
         pos = event.pos()
         geom = self._node.geometry
-        if self._node.model.resizable() and geom.resize_rect.contains(
-            QPoint(int(pos.x()), int(pos.y()))
-        ):
+        if self._node.model.resizable() and geom.resize_rect.contains(QPoint(int(pos.x()), int(pos.y()))):
             self.setCursor(QCursor(Qt.SizeFDiagCursor))
         else:
             self.setCursor(QCursor())
@@ -317,8 +323,7 @@ class NodeGraphicsObject(QGraphicsObject):
         ----------
         event : QGraphicsSceneContextMenuEvent
         """
-        self._scene.node_context_menu.emit(
-            self._node, event.scenePos(), event.screenPos())
+        self._scene.node_context_menu.emit(self._node, event.scenePos(), event.screenPos())
 
     def embed_q_widget(self):
         geom = self._node.geometry

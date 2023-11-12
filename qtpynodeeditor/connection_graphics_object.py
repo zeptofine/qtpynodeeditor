@@ -2,10 +2,15 @@ import typing
 
 from qtpy.QtCore import QRectF
 from qtpy.QtGui import QPainter, QPainterPath
-from qtpy.QtWidgets import (QGraphicsBlurEffect, QGraphicsItem,
-                            QGraphicsObject, QGraphicsSceneHoverEvent,
-                            QGraphicsSceneMouseEvent, QStyleOptionGraphicsItem,
-                            QWidget)
+from qtpy.QtWidgets import (
+    QGraphicsBlurEffect,
+    QGraphicsItem,
+    QGraphicsObject,
+    QGraphicsSceneHoverEvent,
+    QGraphicsSceneMouseEvent,
+    QStyleOptionGraphicsItem,
+    QWidget,
+)
 
 from .connection_painter import ConnectionPainter
 from .node_connection_interaction import NodeConnectionInteraction
@@ -20,14 +25,14 @@ debug_drawing = False
 
 class ConnectionGraphicsObject(QGraphicsObject):
     def __init__(self, scene, connection):
-        '''
+        """
         connection_graphics_object
 
         Parameters
         ----------
         scene : FlowScene
         connection : Connection
-        '''
+        """
         super().__init__()
         self._scene = scene
         self._connection = connection
@@ -49,7 +54,7 @@ class ConnectionGraphicsObject(QGraphicsObject):
             self._scene = None
 
     @property
-    def connection(self) -> 'Connection':
+    def connection(self) -> "Connection":
         """
         Connection
 
@@ -103,8 +108,7 @@ class ConnectionGraphicsObject(QGraphicsObject):
             node_graphics = node.graphics_object
             node_geom = node.geometry
             scene_pos = node_geom.port_scene_position(
-                port_type, self._connection.get_port_index(port_type),
-                node_graphics.sceneTransform()
+                port_type, self._connection.get_port_index(port_type), node_graphics.sceneTransform()
             )
 
             inverted, invertible = self.sceneTransform().inverted()
@@ -169,9 +173,7 @@ class ConnectionGraphicsObject(QGraphicsObject):
         state_required = self._connection.required_port
         if node:
             node.react_to_possible_connection(
-                state_required,
-                self._connection.data_type(opposite_port(state_required)),
-                event.scenePos()
+                state_required, self._connection.data_type(opposite_port(state_required)), event.scenePos()
             )
 
         # -------------------

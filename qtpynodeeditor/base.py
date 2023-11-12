@@ -1,5 +1,5 @@
 class Serializable:
-    'Interface for a serializable class'
+    "Interface for a serializable class"
 
     def save(self) -> dict:
         """

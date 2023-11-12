@@ -2,10 +2,8 @@ import logging
 import math
 
 from qtpy.QtCore import QLineF, QPoint, QRectF, Qt
-from qtpy.QtGui import (QContextMenuEvent, QKeyEvent, QKeySequence,
-                        QMouseEvent, QPainter, QPen, QShowEvent, QWheelEvent)
-from qtpy.QtWidgets import (QAction, QGraphicsView, QLineEdit, QMenu,
-                            QTreeWidget, QTreeWidgetItem, QWidgetAction)
+from qtpy.QtGui import QContextMenuEvent, QKeyEvent, QKeySequence, QMouseEvent, QPainter, QPen, QShowEvent, QWheelEvent
+from qtpy.QtWidgets import QAction, QGraphicsView, QLineEdit, QMenu, QTreeWidget, QTreeWidgetItem, QWidgetAction
 
 from .connection_graphics_object import ConnectionGraphicsObject
 from .flow_scene import FlowScene
@@ -88,14 +86,14 @@ class FlowView(QGraphicsView):
 
     def scale_up(self):
         step = 1.2
-        factor = step ** 1.0
+        factor = step**1.0
         t = self.transform()
         if t.m11() <= 2.0:
             self.scale(factor, factor)
 
     def scale_down(self):
         step = 1.2
-        factor = step ** -1.0
+        factor = step**-1.0
         self.scale(factor, factor)
 
     def delete_selected(self):
@@ -309,9 +307,10 @@ class FlowView(QGraphicsView):
 
             # horizontal lines
             lines.extend(
-                [QLineF(left * grid_step, yi * grid_step, right * grid_step, yi * grid_step)
-                 for yi in range(int(bottom), int(top) + 1)
-                 ]
+                [
+                    QLineF(left * grid_step, yi * grid_step, right * grid_step, yi * grid_step)
+                    for yi in range(int(bottom), int(top) + 1)
+                ]
             )
 
             painter.drawLines(lines)

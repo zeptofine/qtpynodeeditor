@@ -4,10 +4,15 @@ from typing import Optional
 
 from qtpy.QtCore import QPointF
 
-from .exceptions import (ConnectionCycleFailure, ConnectionDataTypeFailure,
-                         ConnectionPointFailure, ConnectionPortNotEmptyFailure,
-                         ConnectionRequiresPortFailure, ConnectionSelfFailure,
-                         NodeConnectionFailure)
+from .exceptions import (
+    ConnectionCycleFailure,
+    ConnectionDataTypeFailure,
+    ConnectionPointFailure,
+    ConnectionPortNotEmptyFailure,
+    ConnectionRequiresPortFailure,
+    ConnectionSelfFailure,
+    NodeConnectionFailure,
+)
 from .port import PortType, opposite_port
 from .type_converter import TypeConverter
 
@@ -22,10 +27,8 @@ logger = logging.getLogger(__name__)
 
 
 class NodeConnectionInteraction:
-    def __init__(self, node: 'Node',
-                 connection: 'Connection',
-                 scene: 'FlowScene'):
-        '''
+    def __init__(self, node: "Node", connection: "Connection", scene: "FlowScene"):
+        """
         An interactive connection interaction to complete `connection` with the
         given node
 
@@ -34,7 +37,7 @@ class NodeConnectionInteraction:
         node : Node
         connection : Connection
         scene : FlowScene
-        '''
+        """
         self._node = node
         self._connection = connection
         self._scene = scene
@@ -43,10 +46,9 @@ class NodeConnectionInteraction:
     def creates_cycle(self):
         """Would completing the connection introduce a cycle?"""
         required_port = self.connection_required_port
-        return self.connection_node.has_connection_by_port_type(
-            self._node, required_port)
+        return self.connection_node.has_connection_by_port_type(self._node, required_port)
 
-    def can_connect(self) -> tuple['Port', Optional[TypeConverter]]:
+    def can_connect(self) -> tuple["Port", Optional[TypeConverter]]:
         """
         Can connect when following conditions are met:
             1) Connection 'requires' a port - i.e., is missing either a start
@@ -78,35 +80,28 @@ class NodeConnectionInteraction:
         # 1) Connection requires a port
         required_port = self.connection_required_port
         if required_port == PortType.none:
-            raise ConnectionRequiresPortFailure('Connection requires a port')
+            raise ConnectionRequiresPortFailure("Connection requires a port")
         elif required_port not in (PortType.input, PortType.output):
-            raise ValueError(f'Invalid port specified {required_port}')
+            raise ValueError(f"Invalid port specified {required_port}")
 
         # 1.5) Forbid connecting the node to itself
         node = self.connection_node
         if node == self._node:
-            raise ConnectionSelfFailure(f'Cannot connect {node} to itself')
+            raise ConnectionSelfFailure(f"Cannot connect {node} to itself")
 
         # 2) connection point is on top of the node port
         connection_point = self.connection_end_scene_position(required_port)
-        port = self.node_port_under_scene_point(required_port,
-                                                connection_point)
+        port = self.node_port_under_scene_point(required_port, connection_point)
         if not port:
-            raise ConnectionPointFailure(
-                f'Connection point {connection_point} is not on node {node}')
+            raise ConnectionPointFailure(f"Connection point {connection_point} is not on node {node}")
 
         # 3) Node port is vacant
         if not port.can_connect:
-            raise ConnectionPortNotEmptyFailure(
-                f'Port {required_port} {port} cannot connect'
-            )
+            raise ConnectionPortNotEmptyFailure(f"Port {required_port} {port} cannot connect")
 
         # 4) Cycle check
         if self.creates_cycle:
-            raise ConnectionCycleFailure(
-                f'Connecting {self._node} and {node} would introduce a '
-                f'cycle in the graph'
-            )
+            raise ConnectionCycleFailure(f"Connecting {self._node} and {node} would introduce a " f"cycle in the graph")
 
         # 5) Connection type equals node port type, or there is a registered
         #    type conversion that can translate between the two
@@ -118,15 +113,11 @@ class NodeConnectionInteraction:
 
         registry = self._scene.registry
         if required_port == PortType.input:
-            converter = registry.get_type_converter(connection_data_type,
-                                                    candidate_node_data_type)
+            converter = registry.get_type_converter(connection_data_type, candidate_node_data_type)
         else:
-            converter = registry.get_type_converter(candidate_node_data_type,
-                                                    connection_data_type)
+            converter = registry.get_type_converter(candidate_node_data_type, connection_data_type)
         if not converter:
-            raise ConnectionDataTypeFailure(
-                f'{connection_data_type} and {candidate_node_data_type} are not compatible'
-            )
+            raise ConnectionDataTypeFailure(f"{connection_data_type} and {candidate_node_data_type} are not compatible")
 
         return port, converter
 
@@ -150,8 +141,8 @@ class NodeConnectionInteraction:
         try:
             port, converter = self.can_connect()
         except NodeConnectionFailure as ex:
-            logger.debug('Cannot connect node', exc_info=ex)
-            logger.info('Cannot connect node: %s', ex)
+            logger.debug("Cannot connect node", exc_info=ex)
+            logger.info("Cannot connect node: %s", ex)
             return False
 
         # 1.5) If the connection is possible but a type conversion is needed,
@@ -191,8 +182,7 @@ class NodeConnectionInteraction:
         state = self._node.state
 
         # clear pointer to Connection in the NodeState
-        state.erase_connection(port_to_disconnect, port_index,
-                               self._connection)
+        state.erase_connection(port_to_disconnect, port_index, self._connection)
 
         # Propagate invalid data to IN node
         self._connection.propagate_empty_data()
@@ -250,12 +240,9 @@ class NodeConnectionInteraction:
         value : QPointF
         """
         port = self._node.state[port_type][port_index]
-        return port.get_mapped_scene_position(
-            self._node.graphics_object.sceneTransform())
+        return port.get_mapped_scene_position(self._node.graphics_object.sceneTransform())
 
-    def node_port_under_scene_point(self,
-                                    port_type: PortType,
-                                    scene_point: QPointF) -> Optional['Port']:
+    def node_port_under_scene_point(self, port_type: PortType, scene_point: QPointF) -> Optional["Port"]:
         """
         Node port under scene point
 
