@@ -17,7 +17,7 @@ from .node_connection_interaction import NodeConnectionInteraction
 from .port import PortType, opposite_port
 
 if typing.TYPE_CHECKING:
-    from .connection import Connection  # noqa
+    from .connection import Connection
 
 
 debug_drawing = False

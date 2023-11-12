@@ -519,7 +519,7 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
             node_a, node_b = port_a.node, port_b.node
             if node_a.has_connection_by_port_type(node_b, port_b.port_type):
                 raise exceptions.ConnectionCycleFailure(
-                    f"Connecting {node_a} and {node_b} would introduce a " f"cycle in the graph"
+                    f"Connecting {node_a} and {node_b} would introduce a cycle in the graph"
                 )
 
         cgo = ConnectionGraphicsObject(self, connection)

@@ -26,7 +26,7 @@ class VersionProxy(UserString):
     def __init__(self):
         self._version = None
 
-    def _get_version(self) -> Optional[str]:
+    def _get_version(self) -> str | None:
         # Checking for directory is faster than failing out of get_version
         repo_root = Path(__file__).resolve().parent.parent
         if (repo_root / ".git").exists() or (repo_root / ".git_archival.txt").exists():
@@ -41,7 +41,7 @@ class VersionProxy(UserString):
         # Check this second because it can exist in a git repo if we've
         # done a build at least once.
         try:
-            from ._version import version  # noqa: F401
+            from ._version import version
 
             return version
         except ImportError:

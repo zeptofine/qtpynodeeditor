@@ -5,7 +5,7 @@ from qtpy.QtCore import QObject, Signal
 from .enums import ConnectionPolicy, PortType
 
 if typing.TYPE_CHECKING:
-    from .connection import Connection  # noqa
+    from .connection import Connection
 
 
 def opposite_port(port: PortType) -> PortType:
@@ -59,7 +59,7 @@ class Port(QObject):
         if self.port_type == PortType.input:
             # return self.model.in_data(self.index)
             # TODO
-            return
+            return None
         else:
             return self.model.out_data(self.index)
 

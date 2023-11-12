@@ -17,10 +17,10 @@ from .port import PortType, opposite_port
 from .type_converter import TypeConverter
 
 if typing.TYPE_CHECKING:
-    from .connection import Connection  # noqa
-    from .flow_scene import FlowScene  # noqa
-    from .node import Node  # noqa
-    from .port import Port  # noqa
+    from .connection import Connection
+    from .flow_scene import FlowScene
+    from .node import Node
+    from .port import Port
 
 
 logger = logging.getLogger(__name__)
@@ -101,7 +101,7 @@ class NodeConnectionInteraction:
 
         # 4) Cycle check
         if self.creates_cycle:
-            raise ConnectionCycleFailure(f"Connecting {self._node} and {node} would introduce a " f"cycle in the graph")
+            raise ConnectionCycleFailure(f"Connecting {self._node} and {node} would introduce a cycle in the graph")
 
         # 5) Connection type equals node port type, or there is a registered
         #    type conversion that can translate between the two

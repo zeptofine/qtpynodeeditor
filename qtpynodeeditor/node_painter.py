@@ -12,9 +12,9 @@ from .node_state import NodeState
 from .style import ConnectionStyle, NodeStyle
 
 if typing.TYPE_CHECKING:
-    from .connection import Connection  # noqa
-    from .flow_scene import FlowScene  # noqa
-    from .node import Node  # noqa
+    from .connection import Connection
+    from .flow_scene import FlowScene
+    from .node import Node
 
 
 class NodePainterDelegate:

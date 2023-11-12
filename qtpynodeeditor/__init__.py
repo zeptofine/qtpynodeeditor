@@ -27,7 +27,7 @@ from .node_painter import NodePainter, NodePainterDelegate
 from .node_state import NodeState
 from .port import Port, opposite_port
 from .style import ConnectionStyle, FlowViewStyle, NodeStyle, Style, StyleCollection
-from .version import __version__  # noqa: F401
+from .version import __version__
 
 __all__ = [
     "Connection",

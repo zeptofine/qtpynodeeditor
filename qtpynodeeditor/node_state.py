@@ -6,7 +6,7 @@ from .node_data import NodeDataType
 from .port import Port, PortType
 
 if typing.TYPE_CHECKING:
-    from .connection import Connection  # noqa
+    from .connection import Connection
 
 
 class NodeState:

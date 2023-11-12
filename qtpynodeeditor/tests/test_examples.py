@@ -50,9 +50,8 @@ def test_iterate(scene):
 def test_smoke_zero_inputs(scene, example):
     for node in scene.iterate_over_nodes():
         widget = node.model.embedded_widget()
-        if widget is not None:
-            if hasattr(widget, "setText"):
-                widget.setText("0.0")
+        if widget is not None and hasattr(widget, "setText"):
+            widget.setText("0.0")
 
 
 class MySceneEvent(QtGui.QMouseEvent):

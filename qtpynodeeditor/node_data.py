@@ -124,15 +124,13 @@ class NodeDataModel(Serializable, QObject):
 
             if inspect.ismethod(current) or inspect.isfunction(current):
                 raise ValueError(
-                    "{} should not be a function; saw: {}\n"
-                    "Did you forget a @property decorator?"
-                    "".format(attr, current)
+                    f"{attr} should not be a function; saw: {current}\n" "Did you forget a @property decorator?" ""
                 )
 
             try:
                 type(default)(current)
             except TypeError:
-                raise ValueError("{} is of an unexpected type: {}" "".format(attr, current)) from None
+                raise ValueError(f"{attr} is of an unexpected type: {current}") from None
 
             # Fill in the dictionary with the given value
             return current
@@ -156,7 +154,7 @@ class NodeDataModel(Serializable, QObject):
             try:
                 dct = getattr(cls, attr)
             except AttributeError:
-                reasons.append("{} is missing dictionary: {}" "".format(cls.__name__, attr))
+                reasons.append(f"{cls.__name__} is missing dictionary: {attr}")
                 continue
 
             if isinstance(dct, property):
@@ -167,16 +165,16 @@ class NodeDataModel(Serializable, QObject):
                     if num_ports[port_type] == 0:
                         dct[port_type] = {}
                     else:
-                        reasons.append("Port type key {}[{!r}] missing" "".format(attr, port_type))
+                        reasons.append(f"Port type key {attr}[{port_type!r}] missing")
                         continue
 
                 for i in range(num_ports[port_type]):
                     if i not in dct[port_type]:
-                        reasons.append("Port key {}[{!r}][{}] missing" "".format(attr, port_type, i))
+                        reasons.append(f"Port key {attr}[{port_type!r}][{i}] missing")
 
         if reasons:
             reason_text = "\n".join(f"* {reason}" for reason in reasons)
-            raise ValueError("Verification of NodeDataModel class failed:\n{}" "".format(reason_text))
+            raise ValueError(f"Verification of NodeDataModel class failed:\n{reason_text}")
 
     @property
     def style(self):
@@ -242,7 +240,7 @@ class NodeDataModel(Serializable, QObject):
         -------
         value : NodeDataType
         """
-        raise NotImplementedError(f"Subclass {self.__class__.__name__} must " f"implement `data_type`")
+        raise NotImplementedError(f"Subclass {self.__class__.__name__} must implement `data_type`")
 
     def port_out_connection_policy(self, port_index: int) -> ConnectionPolicy:
         """
@@ -342,7 +340,7 @@ class NodeDataModel(Serializable, QObject):
         -------
         value : NodePainterDelegate
         """
-        return None
+        return
 
     def input_connection_created(self, connection):
         """

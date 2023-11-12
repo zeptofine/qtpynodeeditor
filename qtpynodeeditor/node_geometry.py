@@ -9,7 +9,7 @@ from .enums import NodeValidationState, PortType
 from .port import Port
 
 if typing.TYPE_CHECKING:
-    from .node import Node  # noqa
+    from .node import Node
 
 
 class NodeGeometry:

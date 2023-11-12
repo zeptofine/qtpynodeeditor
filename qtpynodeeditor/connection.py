@@ -48,7 +48,7 @@ class Connection(QObject, Serializable):
                 if existing_in == in_port and existing_out == out_port:
                     raise exceptions.PortsAlreadyConnectedError("Specified ports already connected")
                 raise exceptions.MultipleInputConnectionError(
-                    f"Maximum one connection per input port " f"(existing: {conn})"
+                    f"Maximum one connection per input port (existing: {conn})"
                 )
 
         if in_port and out_port:

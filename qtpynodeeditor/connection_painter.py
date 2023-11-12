@@ -8,7 +8,7 @@ from .enums import PortType
 from .style import ConnectionStyle
 
 if typing.TYPE_CHECKING:
-    from .connection import Connection  # noqa
+    from .connection import Connection
 
 
 use_debug_drawing = False
@@ -30,8 +30,8 @@ def debug_drawing(painter, connection):
     source, sink = geom.source, geom.sink
     c1, c2 = geom.points_c1_c2()
 
-    painter.setPen(Qt.red)
-    painter.setBrush(Qt.red)
+    painter.setPen(Qt.GlobalColor.red)
+    painter.setBrush(Qt.GlobalColor.red)
 
     painter.drawLine(QLineF(source, c1))
     painter.drawLine(QLineF(c1, c2))
@@ -39,10 +39,10 @@ def debug_drawing(painter, connection):
     painter.drawEllipse(c1, 3, 3)
     painter.drawEllipse(c2, 3, 3)
 
-    painter.setBrush(Qt.NoBrush)
+    painter.setBrush(Qt.BrushStyle.NoBrush)
 
     painter.drawPath(cubic_path(geom))
-    painter.setPen(Qt.yellow)
+    painter.setPen(Qt.GlobalColor.yellow)
 
     painter.drawRect(geom.bounding_rect)
 
@@ -54,10 +54,10 @@ def draw_sketch_line(painter, connection, style):
     p = QPen()
     p.setWidthF(style.construction_line_width)
     p.setColor(style.construction_color)
-    p.setStyle(Qt.DashLine)
+    p.setStyle(Qt.PenStyle.DashLine)
 
     painter.setPen(p)
-    painter.setBrush(Qt.NoBrush)
+    painter.setBrush(Qt.BrushStyle.NoBrush)
 
     geom = connection.geometry
 
@@ -83,7 +83,7 @@ def draw_hovered_or_selected(painter, connection, style):
         p.setColor(style.selected_halo_color if selected else style.hovered_color)
 
         painter.setPen(p)
-        painter.setBrush(Qt.NoBrush)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
 
         # cubic spline
         cubic = cubic_path(geom)
@@ -124,7 +124,7 @@ def draw_normal_line(painter, connection, style):
 
     cubic = cubic_path(geom)
     if gradient_color:
-        painter.setBrush(Qt.NoBrush)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
 
         c = normal_color_out
         if selected:
@@ -160,7 +160,7 @@ def draw_normal_line(painter, connection, style):
             p.setColor(selected_color)
 
         painter.setPen(p)
-        painter.setBrush(Qt.NoBrush)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
 
         painter.drawPath(cubic)
 

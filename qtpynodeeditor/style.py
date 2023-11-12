@@ -249,10 +249,7 @@ class StyleCollection:
 
     @classmethod
     def from_json(cls, json_doc):
-        if isinstance(json_doc, dict):
-            json_style = json_doc
-        else:
-            json_style = json.loads(json_doc)
+        json_style = json_doc if isinstance(json_doc, dict) else json.loads(json_doc)
 
         return StyleCollection(
             node=NodeStyle(json_style),
