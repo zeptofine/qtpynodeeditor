@@ -195,8 +195,6 @@ class NodeDataModel(Serializable, QObject):
         if data_types is not None:
             cls._data_type = {PortType.input: data_types.inputs, PortType.output: data_types.outputs}
 
-        print(cls._data_type)
-
         fill_defaults("port_caption_visible", False)
         reasons = []
         for attr in ("_data_type", "_port_caption", "port_caption_visible"):
