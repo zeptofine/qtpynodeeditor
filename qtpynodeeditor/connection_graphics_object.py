@@ -246,9 +246,7 @@ class ConnectionGraphicsObject(QGraphicsObject):
         event.accept()
 
     def on_transfer(self):
-        print(f"transferred {time.time()}")
         self.anim.start()
-        # self.effect_strength = 1
 
     def add_graphics_effect(self):
         effect = QGraphicsBlurEffect()
