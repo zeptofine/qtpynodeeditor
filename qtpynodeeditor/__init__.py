@@ -20,7 +20,7 @@ from .flow_scene import FlowScene
 from .flow_view import FlowView
 from .node import Node, NodeDataType
 from .node_connection_interaction import NodeConnectionInteraction
-from .node_data import CaptionOverride, NodeData, NodeDataModel, PortCount
+from .node_data import CaptionOverride, DataTypes, NodeData, NodeDataModel, PortCount
 from .node_geometry import NodeGeometry
 from .node_graphics_object import NodeGraphicsObject
 from .node_painter import NodePainter, NodePainterDelegate
