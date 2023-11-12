@@ -1,6 +1,7 @@
 import json
 import logging
 import random
+from typing import ClassVar
 
 from qtpy.QtGui import QColor
 
@@ -22,7 +23,7 @@ def _get_qcolor(style_dict, key):
 
 
 class Style:
-    default_style = {
+    default_style: ClassVar = {
         "FlowViewStyle": {
             "BackgroundColor": [53, 53, 53],
             "FineGridColor": [60, 60, 60],

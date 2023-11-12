@@ -4,6 +4,7 @@ from qtpy import QtWidgets
 
 import qtpynodeeditor
 from qtpynodeeditor import NodeData, NodeDataModel, NodeDataType, PortType
+from qtpynodeeditor.node_data import DataTypes, PortCount
 
 
 class MyNodeData(NodeData):
@@ -18,14 +19,11 @@ class NaiveDataModel(NodeDataModel):
     name = "NaiveDataModel"
     caption = "Caption"
     caption_visible = True
-    num_ports = {
-        PortType.input: 2,
-        PortType.output: 2,
-    }
-    data_type = {
-        PortType.input: {0: MyNodeData.data_type, 1: SimpleNodeData.data_type},
-        PortType.output: {0: MyNodeData.data_type, 1: SimpleNodeData.data_type},
-    }
+    num_ports = PortCount(2, 2)
+    data_types = DataTypes(
+        {0: MyNodeData.data_type, 1: SimpleNodeData.data_type},
+        {0: MyNodeData.data_type, 1: SimpleNodeData.data_type},
+    )
 
     def out_data(self, port_index):
         if port_index == 0:

@@ -185,7 +185,7 @@ class NodeGeometry:
         addon = 4 * self._style.connection_point_diameter
         return QRectF(0 - addon, 0 - addon, self._width + 2 * addon, self._height + 2 * addon)
 
-    def recalculate_size(self, font: QFont = None):
+    def recalculate_size(self, font: QFont | None = None):
         """
         If font is unspecified,
             Updates size unconditionally
@@ -230,7 +230,7 @@ class NodeGeometry:
         self._width = width
         self._height = height
 
-    def port_scene_position(self, port_type: PortType, index: int, t: QTransform = None) -> QPointF:
+    def port_scene_position(self, port_type: PortType, index: int, t: QTransform | None = None) -> QPointF:
         """
         Port scene position
 

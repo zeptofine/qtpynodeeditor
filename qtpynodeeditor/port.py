@@ -6,6 +6,7 @@ from .enums import ConnectionPolicy, PortType
 
 if typing.TYPE_CHECKING:
     from .connection import Connection
+    from .node import Node
 
 
 def opposite_port(port: PortType) -> PortType:
@@ -36,7 +37,7 @@ class Port(QObject):
     data_invalidated = Signal(QObject)
     _connections: list["Connection"]
 
-    def __init__(self, node, *, port_type: PortType, index: int):
+    def __init__(self, node: "Node", *, port_type: PortType, index: int):
         super().__init__(parent=node)
         self.node = node
         self.port_type = port_type
@@ -70,6 +71,8 @@ class Port(QObject):
     @property
     def caption(self):
         "Data model-specified caption for the port"
+        if self.model.port_caption is None:
+            return ""
         return self.model.port_caption[self.port_type][self.index]
 
     @property
@@ -141,6 +144,7 @@ class Port(QObject):
         value : QPointF
         """
         ngo = self.node.graphics_object
+        assert ngo is not None
         return ngo.sceneTransform().map(self.scene_position)
 
     def __repr__(self):

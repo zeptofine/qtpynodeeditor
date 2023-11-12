@@ -8,6 +8,8 @@ from .port import Port, PortType
 if typing.TYPE_CHECKING:
     from .connection import Connection
 
+IndexedPorts = dict[int, Port]
+
 
 class NodeState:
     def __init__(self, node):
@@ -18,12 +20,12 @@ class NodeState:
         ----------
         model : NodeDataModel
         """
-        self._ports = {PortType.input: OrderedDict(), PortType.output: OrderedDict()}
+        self._ports = {PortType.input: IndexedPorts(), PortType.output: IndexedPorts()}
 
         model = node.model
         for port_type in self._ports:
             num_ports = model.num_ports[port_type]
-            self._ports[port_type] = OrderedDict(
+            self._ports[port_type] = IndexedPorts(
                 (i, Port(node, port_type=port_type, index=i)) for i in range(num_ports)
             )
 

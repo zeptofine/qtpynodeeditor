@@ -5,6 +5,7 @@ from qtpy.QtCore import Qt
 
 import qtpynodeeditor
 from qtpynodeeditor import NodeData, NodeDataModel, NodeDataType, PortType
+from qtpynodeeditor.node_data import PortCount
 
 
 class PixmapData(NodeData):
@@ -16,10 +17,7 @@ class PixmapData(NodeData):
 
 class ImageLoaderModel(NodeDataModel):
     caption = "Image Source"
-    num_ports = {
-        PortType.input: 0,
-        PortType.output: 1,
-    }
+    num_ports = PortCount(0, 1)
     data_type = PixmapData
 
     def __init__(self, *args, **kwargs):
@@ -77,10 +75,8 @@ class ImageLoaderModel(NodeDataModel):
 
 class ImageShowModel(NodeDataModel):
     caption = "Image Display"
-    num_ports = {
-        PortType.input: 1,
-        PortType.output: 1,
-    }
+    num_ports = PortCount(1, 1)
+
     data_type = PixmapData
 
     def __init__(self, *args, **kwargs):

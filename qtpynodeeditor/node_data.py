@@ -1,6 +1,7 @@
 import inspect
 from collections import namedtuple
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import Optional, TypeVar
 
 from qtpy.QtCore import QObject, Signal
 from qtpy.QtWidgets import QWidget
@@ -11,6 +12,9 @@ from .enums import ConnectionPolicy, NodeValidationState, PortType
 from .port import Port
 
 NodeDataType = namedtuple("NodeDataType", ("id", "name"))
+
+
+V = TypeVar("V")
 
 
 class NodeData:
@@ -42,14 +46,45 @@ class NodeData:
         return self.data_type.id == other.data_type.id
 
 
+@dataclass(frozen=True)
+class PortCount:
+    inputs: int = 0
+    outputs: int = 0
+
+    def __getitem__(self, type: PortType):
+        if type == PortType.input:
+            return self.inputs
+        if type == PortType.output:
+            return self.outputs
+        raise ValueError
+
+
+@dataclass(frozen=True)
+class CaptionOverride:
+    inputs: dict[int, str] | None = None
+    outputs: dict[int, str] | None = None
+
+
+@dataclass(frozen=True)
+class DataTypes:
+    inputs: dict[int, NodeDataType]
+    outputs: dict[int, NodeDataType]
+
+
 class NodeDataModel(Serializable, QObject):
     name: str | None = None
     caption: str | None = None
     caption_visible = True
-    num_ports = {
-        PortType.input: 1,
-        PortType.output: 1,
-    }
+    num_ports = PortCount(1, 1)
+
+    caption_override: CaptionOverride | None = None
+
+    _port_caption: dict[PortType, dict[int, str]] | None = None
+    port_caption_visible: dict[PortType, dict[int, bool]]
+
+    all_data_types: NodeDataType | None = None
+    data_types: DataTypes | None = None
+    _data_type: dict
 
     # data_updated and data_invalidated refer to the port index that has
     # changed:
@@ -97,11 +132,8 @@ class NodeDataModel(Serializable, QObject):
             # Dynamically defined - that's OK, but we can't verify it.
             return
 
-        assert set(num_ports.keys()) == {"input", "output"}
-
         # TODO while the end result is nicer, this is ugly; refactor away...
-
-        def new_dict(value):
+        def new_dict(value: V) -> dict[PortType, dict[int, V]]:
             return {
                 PortType.input: {i: value for i in range(num_ports[PortType.input])},
                 PortType.output: {i: value for i in range(num_ports[PortType.output])},
@@ -143,12 +175,31 @@ class NodeDataModel(Serializable, QObject):
 
             setattr(cls, attr, new_dict(default))
 
-        fill_defaults("port_caption", "")
-        fill_defaults("port_caption_visible", False)
-        fill_defaults("data_type", None, valid_type=NodeDataType)
+        cls._port_caption = new_dict("")
+        if cls.caption_override is not None:
+            # captions = {}
+            if cls.caption_override.inputs is not None:
+                cls._port_caption[PortType.input] = cls.caption_override.inputs
 
+            if cls.caption_override.outputs is not None:
+                cls._port_caption[PortType.output] = cls.caption_override.outputs
+
+        all_types = cls.all_data_types
+        data_types = cls.data_types
+        if all_types is not None and data_types is not None:
+            raise ValueError(f"Cannot use all_types and data_types simultaneously in {cls.__name__}")
+        assert all_types or data_types, f"either all_types or data_types should be used in {cls.__name__}"
+
+        if all_types is not None:
+            cls._data_type = new_dict(all_types)
+        if data_types is not None:
+            cls._data_type = {PortType.input: data_types.inputs, PortType.output: data_types.outputs}
+
+        print(cls._data_type)
+
+        fill_defaults("port_caption_visible", False)
         reasons = []
-        for attr in ("data_type", "port_caption", "port_caption_visible"):
+        for attr in ("_data_type", "_port_caption", "port_caption_visible"):
             try:
                 dct = getattr(cls, attr)
             except AttributeError:
@@ -158,7 +209,7 @@ class NodeDataModel(Serializable, QObject):
             if isinstance(dct, property):
                 continue
 
-            for port_type in {"input", "output"}:
+            for port_type in {PortType.input, PortType.output}:
                 if port_type not in dct:
                     if num_ports[port_type] == 0:
                         dct[port_type] = {}
@@ -180,6 +231,10 @@ class NodeDataModel(Serializable, QObject):
     def style(self):
         "Style collection for drawing this data model"
         return self._style
+
+    @property
+    def port_caption(self):
+        return self._port_caption
 
     def save(self) -> dict:
         """
@@ -240,7 +295,7 @@ class NodeDataModel(Serializable, QObject):
         -------
         value : NodeDataType
         """
-        raise NotImplementedError(f"Subclass {self.__class__.__name__} must implement `data_type`")
+        return self._data_type
 
     def port_out_connection_policy(self, port_index: int) -> ConnectionPolicy:
         """
@@ -267,7 +322,7 @@ class NodeDataModel(Serializable, QObject):
         """
         return self._style.node
 
-    def set_in_data(self, node_data: NodeData, port: Port):
+    def set_in_data(self, node_data: NodeData | None, port: Port):
         """
         Triggers the algorithm; to be overridden by subclasses
 

@@ -1,20 +1,21 @@
 [build-system]
 build-backend = "setuptools.build_meta"
-requires = [ "setuptools>=45", "setuptools_scm[toml]>=6.2",]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
 
 [project]
-classifiers = [ "Development Status :: 2 - Pre-Alpha", "Natural Language :: English", "Programming Language :: Python :: 3",]
+classifiers = ["Development Status :: 2 - Pre-Alpha", "Natural Language :: English", "Programming Language :: Python :: 3"]
 description = "Python Qt node editor"
-dynamic = [ "version", "readme", "dependencies", "optional-dependencies", "optional-dependencies",]
+dynamic = ["version", "readme", "dependencies", "optional-dependencies", "optional-dependencies"]
 keywords = []
 name = "pyside6nodeeditor"
 requires-python = ">=3.11"
+
 [[project.authors]]
 name = "Ken Lauer"
 
 [options]
-zip_safe = false
 include_package_data = true
+zip_safe = false
 
 [project.license]
 file = "LICENSE"
@@ -23,15 +24,15 @@ file = "LICENSE"
 write_to = "qtpynodeeditor/_version.py"
 
 [tool.setuptools.packages.find]
-where = [ ".",]
-include = [ "qtpynodeeditor*",]
+include = ["qtpynodeeditor*"]
 namespaces = false
+where = ["."]
 
 [tool.setuptools.dynamic.readme]
 file = "README.rst"
 
 [tool.setuptools.dynamic.dependencies]
-file = [ "requirements.txt",]
+file = ["requirements.txt"]
 
 [tool.setuptools.dynamic.optional-dependencies.test]
 file = "dev-requirements.txt"
@@ -58,7 +59,6 @@ extend-select = [
   "E", # pycodestyle
   "W", # pycodestyle
   "FA", # flake8-future-annotations
-  "ISC", # flake8-implicit-str-concat
   "G", # flake8-logging-format
   "Q", # flake8-quotes
   "SLF", # flake8-self

@@ -1,4 +1,3 @@
-import typing
 import uuid
 
 from qtpy.QtCore import QObject, Signal
@@ -19,7 +18,14 @@ class Connection(QObject, Serializable):
     connection_made_incomplete = Signal(QObject)
     updated = Signal(QObject)
 
-    def __init__(self, port_a: Port, port_b: Port = None, *, style: StyleCollection, converter: TypeConverter = None):
+    def __init__(
+        self,
+        port_a: Port,
+        port_b: Port | None = None,
+        *,
+        style: StyleCollection,
+        converter: TypeConverter | None = None,
+    ):
         super().__init__()
         self._uid = str(uuid.uuid4())
 
@@ -45,9 +51,7 @@ class Connection(QObject, Serializable):
             existing_in, existing_out = conn.ports
             if existing_in == in_port and existing_out == out_port:
                 raise exceptions.PortsAlreadyConnectedError("Specified ports already connected")
-            raise exceptions.MultipleInputConnectionError(
-                f"Maximum one connection per input port (existing: {conn})"
-            )
+            raise exceptions.MultipleInputConnectionError(f"Maximum one connection per input port (existing: {conn})")
 
         if in_port and out_port:
             self._required_port = PortType.none
@@ -69,10 +73,10 @@ class Connection(QObject, Serializable):
         self.propagate_empty_data()
         self.last_hovered_node = None
 
-        for port in self.valid_ports.values():
+        for port_type, port in self.valid_ports.items():
             if port.node.graphics_object is not None:
                 port.node.graphics_object.update()
-            self._ports[port] = None
+            self._ports[port_type] = None
 
         if self._graphics_object is not None:
             self._graphics_object.cleanup()
@@ -91,7 +95,7 @@ class Connection(QObject, Serializable):
         value : dict
         """
         in_port, out_port = self.ports
-        if not in_port and not out_port:
+        if in_port is None or out_port is None:
             return {}
 
         connection_json = {
@@ -154,7 +158,7 @@ class Connection(QObject, Serializable):
             port.remove_connection(self)
 
     @property
-    def graphics_object(self) -> ConnectionGraphicsObject:
+    def graphics_object(self) -> ConnectionGraphicsObject | None:
         """
         Get the connection graphics object
 
@@ -177,8 +181,10 @@ class Connection(QObject, Serializable):
         if self.required_port != PortType.none:
             attached_port = opposite_port(self.required_port)
             attached_port_index = self.get_port_index(attached_port)
-            node = self.get_node(attached_port)
-            node_scene_transform = node.graphics_object.sceneTransform()
+
+            assert (node := self.get_node(attached_port)) is not None
+            assert (graphics_object := node.graphics_object) is not None
+            node_scene_transform = graphics_object.sceneTransform()
             pos = node.geometry.port_scene_position(attached_port, attached_port_index, node_scene_transform)
             self._graphics_object.setPos(pos)
 
@@ -255,7 +261,9 @@ class Connection(QObject, Serializable):
         -------
         index : int
         """
-        return self._ports[port_type].index
+        port = self._ports[port_type]
+        assert port is not None
+        return port.index
 
     def clear_node(self, port_type: PortType):
         """
@@ -269,8 +277,9 @@ class Connection(QObject, Serializable):
             self.connection_made_incomplete.emit(self)
 
         port = self._ports[port_type]
-        self._ports[port_type] = None
+        assert port is not None
         port.remove_connection(self)
+        self._ports[port_type] = None
 
     @property
     def valid_ports(self):
@@ -324,7 +333,7 @@ class Connection(QObject, Serializable):
         """
         return all(self._ports.values())
 
-    def propagate_data(self, node_data: NodeData):
+    def propagate_data(self, node_data: NodeData | None):
         """
         Propagate the given data from the output port -> input port.
 
@@ -338,18 +347,21 @@ class Connection(QObject, Serializable):
 
         if node_data is not None and self._converter:
             node_data = self._converter(node_data)
-
         in_port.node.propagate_data(node_data, in_port)
 
     @property
     def input_node(self) -> Node:
         "Input node"
-        return self._ports[PortType.input].node
+        input_port = self._ports[PortType.input]
+        assert input_port is not None
+        return input_port.node
 
     @property
     def output_node(self) -> Node:
         "Output node"
-        return self._ports[PortType.output].node
+        output_port = self._ports[PortType.output]
+        assert output_port is not None
+        return output_port.node
 
     # For backward-compatibility:
     output = output_node
@@ -358,7 +370,7 @@ class Connection(QObject, Serializable):
         self.propagate_data(None)
 
     @property
-    def last_hovered_node(self) -> Node:
+    def last_hovered_node(self) -> Node | None:
         """
         Last hovered node
 
@@ -369,7 +381,7 @@ class Connection(QObject, Serializable):
         return self._last_hovered_node
 
     @last_hovered_node.setter
-    def last_hovered_node(self, node: Node):
+    def last_hovered_node(self, node: Node | None):
         """
         Set last hovered node
 

@@ -21,7 +21,12 @@ from .type_converter import TypeConverter
 
 
 def locate_node_at(scene_point, scene, view_transform):
-    items = scene.items(scene_point, Qt.IntersectsItemShape, Qt.DescendingOrder, view_transform)
+    items = scene.items(
+        scene_point,
+        Qt.ItemSelectionMode.IntersectsItemShape,
+        Qt.SortOrder.DescendingOrder,
+        view_transform,
+    )
     filtered_items = [item for item in items if isinstance(item, NodeGraphicsObject)]
     return filtered_items[0].node if filtered_items else None
 
@@ -197,7 +202,7 @@ class FlowSceneModel:
         ----------
         conn : Connection
         """
-        conn.connection_made_incomplete.connect(self.connection_deleted.emit, Qt.UniqueConnection)
+        conn.connection_made_incomplete.connect(self.connection_deleted.emit, Qt.ConnectionType.UniqueConnection)
 
     def _send_connection_created_to_nodes(self, conn: Connection):
         """
@@ -416,7 +421,7 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
         self.allow_node_creation = allow_node_deletion
         self.node_dragging.connect(self._redraw_post_drag)
 
-        self.setItemIndexMethod(QGraphicsScene.NoIndex)
+        self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
 
     def _redraw_post_drag(self, dragging: bool) -> None:
         """
@@ -461,7 +466,7 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
         return locate_node_at(point, self, transform)
 
     def create_connection(
-        self, port_a: Port, port_b: Port = None, *, converter: TypeConverter = None, check_cycles=True
+        self, port_a: Port, port_b: Port | None = None, *, converter: TypeConverter | None = None, check_cycles=True
     ) -> Connection:
         """
         Create a connection
@@ -524,13 +529,19 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
 
         if port_a and port_b:
             in_port, out_port = connection.ports
+            assert out_port is not None
             out_port.node.on_data_updated(out_port)
             self.connection_created.emit(connection)
 
         return connection
 
     def create_connection_by_index(
-        self, node_in: Node, port_index_in: int, node_out: Node, port_index_out: int, converter: TypeConverter
+        self,
+        node_in: Node,
+        port_index_in: int,
+        node_out: Node,
+        port_index_out: int,
+        converter: TypeConverter | None,
     ) -> Connection:
         """
         Create connection
@@ -571,7 +582,7 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
         node_in = self._nodes[node_in_id]
         node_out = self._nodes[node_out_id]
 
-        def get_converter():
+        def get_converter() -> TypeConverter | None:
             converter = connection_json.get("converter", None)
             if converter is None:
                 return None
@@ -594,8 +605,7 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
             node_in, port_index_in, node_out, port_index_out, converter=get_converter()
         )
 
-
-    def create_node(self, data_model: NodeDataModel) -> Node:
+    def create_node(self, data_model: type[NodeDataModel]) -> Node:
         """
         Create a node in the scene
 

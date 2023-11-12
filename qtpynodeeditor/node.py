@@ -240,7 +240,7 @@ class Node(QObject, Serializable):
         """
         return self._model
 
-    def propagate_data(self, node_data: NodeData, input_port: Port):
+    def propagate_data(self, node_data: NodeData | None, input_port: Port):
         """
         Propagates incoming data to the underlying model.
 

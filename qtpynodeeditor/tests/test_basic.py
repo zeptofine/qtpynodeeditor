@@ -5,6 +5,7 @@ import qtpy.QtCore
 
 import qtpynodeeditor as nodeeditor
 from qtpynodeeditor import PortType
+from qtpynodeeditor.node_data import PortCount
 
 
 class MyNodeData(nodeeditor.NodeData):
@@ -19,7 +20,7 @@ class BasicDataModel(nodeeditor.NodeDataModel):
     name = "MyDataModel"
     caption = "Caption"
     caption_visible = True
-    num_ports = {"input": 3, "output": 3}
+    num_ports = PortCount(3, 3)
     data_type = MyNodeData.data_type
 
     def model(self):
@@ -39,7 +40,7 @@ class BasicOtherDataModel(nodeeditor.NodeDataModel):
     name = "MyOtherDataModel"
     caption = "Caption"
     caption_visible = True
-    num_ports = {"input": 1, "output": 1}
+    num_ports = PortCount(1, 1)
     data_type = MyOtherNodeData.data_type
 
 
