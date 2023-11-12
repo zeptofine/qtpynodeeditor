@@ -48,7 +48,7 @@ class ConnectionGraphicsObject(QGraphicsObject):
         # self.add_graphics_effect()
         self.setZValue(-1.0)
 
-    def _cleanup(self):
+    def cleanup(self):
         if self._scene is not None:
             self._scene.removeItem(self)
             self._scene = None

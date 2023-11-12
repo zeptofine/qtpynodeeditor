@@ -21,7 +21,7 @@ class Node(QObject, Serializable):
     _style: NodeStyle
     _state: NodeState
     _geometry: NodeGeometry
-    _graphics_obj: Optional[NodeGraphicsObject]
+    _graphics_obj: NodeGraphicsObject | None
 
     def __init__(self, data_model: NodeDataModel):
         """
@@ -94,8 +94,8 @@ class Node(QObject, Serializable):
         node_path : tuple
             The path to the node
         """
-        seen: set[typing.Union[Node, None]]
-        pending: typing.Deque[tuple[list[Node], Node]]
+        seen: set[Node | None]
+        pending: collections.deque[tuple[list[Node], Node]]
 
         seen = {None}
         pending = collections.deque([([], self)])
@@ -119,19 +119,19 @@ class Node(QObject, Serializable):
             node_path, node = pending.popleft()
             seen.add(node)
             if node is not self:
-                yield tuple(node_path) + (node,)
+                yield (*tuple(node_path), node)
 
-            node_path = list(node_path) + [node]
-            for node in get_connection_nodes(node.state):
+            node_path = [*node_path, node]
+            for node_ in get_connection_nodes(node.state):
                 if node not in seen:
-                    pending.append((node_path, node))
+                    pending.append((node_path, node_))
 
     def __getitem__(self, key):
         return self._state[key]
 
-    def _cleanup(self):
+    def cleanup(self):
         if self._graphics_obj is not None:
-            self._graphics_obj._cleanup()
+            self._graphics_obj.cleanup()
             self._graphics_obj = None
             self._geometry = None
 
@@ -203,7 +203,7 @@ class Node(QObject, Serializable):
         self._graphics_obj.update()
 
     @property
-    def graphics_object(self) -> Optional[NodeGraphicsObject]:
+    def graphics_object(self) -> NodeGraphicsObject | None:
         """
         Get/set the associated node graphics object.
 
@@ -251,7 +251,7 @@ class Node(QObject, Serializable):
         """
         if input_port.node is not self:
             raise ValueError("Port does not belong to this Node")
-        elif input_port.port_type != PortType.input:
+        if input_port.port_type != PortType.input:
             raise ValueError("Port is not an input port")
 
         self._model.set_in_data(node_data, input_port)
@@ -332,6 +332,7 @@ class Node(QObject, Serializable):
         """
         if self._graphics_obj is not None:
             return self._graphics_obj.pos()
+        return QPointF(0, 0)
 
     @position.setter
     def position(self, pos):

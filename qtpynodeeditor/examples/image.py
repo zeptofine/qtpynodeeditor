@@ -60,9 +60,8 @@ class ImageLoaderModel(NodeDataModel):
             self.data_updated.emit(0)
             return True
 
-        elif event.type() == QtCore.QEvent.Resize:
-            if self._pixmap is not None:
-                set_pixmap()
+        if event.type() == QtCore.QEvent.Type.Resize and self._pixmap is not None:
+            set_pixmap()
 
         return False
 
@@ -88,7 +87,7 @@ class ImageShowModel(NodeDataModel):
         super().__init__(*args, **kwargs)
         self._node_data = None
         self._label = QtWidgets.QLabel("Image will appear here")
-        self._label.setAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+        self._label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter)
 
         font = self._label.font()
         font.setBold(True)
@@ -102,11 +101,16 @@ class ImageShowModel(NodeDataModel):
         return True
 
     def eventFilter(self, obj, event):
-        if obj is self._label and event.type() == QtCore.QEvent.Resize:
-            if self._node_data and self._node_data.data_type == PixmapData.data_type and self._node_data.pixmap:
-                w, h = self._label.width(), self._label.height()
-                pixmap = self._node_data.pixmap
-                self._label.setPixmap(pixmap.scaled(w, h, Qt.KeepAspectRatio))
+        if (
+            obj is self._label
+            and event.type() == QtCore.QEvent.Type.Resize
+            and self._node_data
+            and self._node_data.data_type == PixmapData.data_type
+            and self._node_data.pixmap
+        ):
+            w, h = self._label.width(), self._label.height()
+            pixmap = self._node_data.pixmap
+            self._label.setPixmap(pixmap.scaled(w, h, Qt.AspectRatioMode.KeepAspectRatio))
 
         return False
 

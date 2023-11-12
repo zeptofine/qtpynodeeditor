@@ -48,7 +48,7 @@ class NodeConnectionInteraction:
         required_port = self.connection_required_port
         return self.connection_node.has_connection_by_port_type(self._node, required_port)
 
-    def can_connect(self) -> tuple["Port", Optional[TypeConverter]]:
+    def can_connect(self) -> tuple["Port", TypeConverter | None]:
         """
         Can connect when following conditions are met:
             1) Connection 'requires' a port - i.e., is missing either a start
@@ -81,7 +81,7 @@ class NodeConnectionInteraction:
         required_port = self.connection_required_port
         if required_port == PortType.none:
             raise ConnectionRequiresPortFailure("Connection requires a port")
-        elif required_port not in (PortType.input, PortType.output):
+        if required_port not in (PortType.input, PortType.output):
             raise ValueError(f"Invalid port specified {required_port}")
 
         # 1.5) Forbid connecting the node to itself

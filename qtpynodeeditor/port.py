@@ -60,8 +60,7 @@ class Port(QObject):
             # return self.model.in_data(self.index)
             # TODO
             return None
-        else:
-            return self.model.out_data(self.index)
+        return self.model.out_data(self.index)
 
     @property
     def can_connect(self):
@@ -93,8 +92,7 @@ class Port(QObject):
         "The connection policy (one/many) for the port"
         if self.port_type == PortType.input:
             return ConnectionPolicy.one
-        else:
-            return self.model.port_out_connection_policy(self.index)
+        return self.model.port_out_connection_policy(self.index)
 
     def add_connection(self, connection: "Connection"):
         "Add a Connection to the Port"

@@ -297,10 +297,7 @@ class NodePainter:
 
         color = node_style.selected_boundary_color if graphics_object.isSelected() else node_style.normal_boundary_color
 
-        if geom.hovered:
-            p = QPen(color, node_style.hovered_pen_width)
-        else:
-            p = QPen(color, node_style.pen_width)
+        p = QPen(color, node_style.hovered_pen_width) if geom.hovered else QPen(color, node_style.pen_width)
 
         painter.setPen(p)
 

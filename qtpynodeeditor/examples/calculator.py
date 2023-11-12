@@ -95,9 +95,8 @@ class MathOperationDataModel(NodeDataModel):
         if not self._number1 or not self._number2:
             raise RuntimeError("inputs unset")
 
-        with self._number1.lock:
-            with self._number2.lock:
-                yield
+        with self._number1.lock, self._number2.lock:
+            yield
 
         self.data_updated.emit(0)
 
@@ -427,10 +426,8 @@ def main(app):
             node_display[PortType.input][0],
         )
 
-    try:
+    with contextlib.suppress(ImportError):
         scene.auto_arrange(nodes=inputs, layout="bipartite")
-    except ImportError:
-        ...
 
     return scene, view, [node_a, node_b]
 

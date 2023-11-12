@@ -265,7 +265,7 @@ class NodeGeometry:
 
     def check_hit_scene_point(
         self, port_type: PortType, scene_point: QPointF, scene_transform: QTransform
-    ) -> typing.Optional[Port]:
+    ) -> Port | None:
         """
         Check a scene point for a specific port type.
 
@@ -291,7 +291,7 @@ class NodeGeometry:
         nearby_port = None
 
         tolerance = 2.0 * self._style.connection_point_diameter
-        for idx, port in self._node.state[port_type].items():
+        for port in self._node.state[port_type].values():
             pos = port.get_mapped_scene_position(scene_transform) - scene_point
             distance = math.sqrt(QPointF.dotProduct(pos, pos))
             if distance < tolerance:

@@ -148,8 +148,7 @@ class FlowSceneModel:
         scene_json = {}
         nodes_json_array = []
         connection_json_array = []
-        for node in self._nodes.values():
-            nodes_json_array.append(node.__getstate__())
+        nodes_json_array = [node.__getstate__() for node in self._nodes.values()]
 
         scene_json["nodes"] = nodes_json_array
         for connection in self._connections:
@@ -249,11 +248,7 @@ class FlowSceneModel:
 
         # A leaf node is a node with no input ports, or all possible input ports empty
         def is_node_leaf(node, model):
-            for port in node[PortType.input].values():
-                if not port.connections:
-                    return False
-
-            return True
+            return all(port.connections for port in node[PortType.input].values())
 
         # Iterate over "leaf" nodes
         for node in self._nodes.values():
@@ -295,9 +290,9 @@ class FlowSceneModel:
         ImportError
             If networkx is unavailable
         """
-        import networkx
+        import networkx as nx
 
-        graph = networkx.DiGraph()
+        graph = nx.DiGraph()
         for node in self._nodes.values():
             graph.add_node(node)
 
@@ -318,7 +313,7 @@ class FlowSceneModel:
         for conn in list(node.state.all_connections):
             self.delete_connection(conn)
 
-        node._cleanup()
+        node.cleanup()
         del self._nodes[node.id]
 
     def _restore_node(self, node_json: dict) -> Node:
@@ -381,7 +376,7 @@ class FlowSceneModel:
             ...
         else:
             connection.remove_from_nodes()
-            connection._cleanup()
+            connection.cleanup()
 
 
 class FlowScene(FlowSceneModel, QGraphicsScene):
@@ -593,13 +588,12 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
 
             return self._registry.get_type_converter(out_type, in_type)
 
-        connection = self.create_connection_by_index(
+        # Note: the connection_created(...) signal has already been sent by
+        # create_connection(...)
+        return self.create_connection_by_index(
             node_in, port_index_in, node_out, port_index_out, converter=get_converter()
         )
 
-        # Note: the connection_created(...) signal has already been sent by
-        # create_connection(...)
-        return connection
 
     def create_node(self, data_model: NodeDataModel) -> Node:
         """
@@ -646,12 +640,12 @@ class FlowScene(FlowSceneModel, QGraphicsScene):
         ImportError
             If networkx is unavailable
         """
-        import networkx
+        import networkx as nx
 
         dig = self.to_digraph()
 
         layouts = {
-            name: getattr(networkx.layout, f"{name}_layout")
+            name: getattr(nx.layout, f"{name}_layout")
             for name in ("bipartite", "circular", "kamada_kawai", "random", "shell", "spring", "spectral")
         }
 

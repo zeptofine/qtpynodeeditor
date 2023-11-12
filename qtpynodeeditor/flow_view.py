@@ -179,10 +179,10 @@ class FlowView(QGraphicsView):
 
         # Setup filtering
         def filter_handler(text):
-            for name, top_lvl_item in top_level_items.items():
+            for top_lvl_item in top_level_items.values():
                 for i in range(top_lvl_item.childCount()):
                     child = top_lvl_item.child(i)
-                    model_name = child.data(0, Qt.UserRole)
+                    model_name = child.data(0, Qt.ItemDataRole.UserRole)
                     child.setHidden(text not in model_name)
 
         txt_box.textChanged.connect(filter_handler)
@@ -202,7 +202,7 @@ class FlowView(QGraphicsView):
         if self.itemAt(event.pos()):
             super().contextMenuEvent(event)
             return
-        elif not self._scene.allow_node_creation:
+        if not self._scene.allow_node_creation:
             return
 
         menu = self.generate_context_menu(event.pos())
@@ -261,7 +261,7 @@ class FlowView(QGraphicsView):
         event : QMouseEvent
         """
         super().mousePressEvent(event)
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self._click_pos = self.mapToScene(event.pos())
 
     def mouseMoveEvent(self, event: QMouseEvent):
@@ -273,11 +273,14 @@ class FlowView(QGraphicsView):
         event : QMouseEvent
         """
         super().mouseMoveEvent(event)
-        if self._scene.mouseGrabberItem() is None and event.buttons() == Qt.LeftButton:
+        if (
+            self._scene.mouseGrabberItem() is None
+            and event.buttons() == Qt.MouseButton.LeftButton
             # Make sure shift is not being pressed
-            if not (event.modifiers() & Qt.ShiftModifier):
-                difference = self._click_pos - self.mapToScene(event.pos())
-                self.setSceneRect(self.sceneRect().translated(difference.x(), difference.y()))
+            and not (event.modifiers() & Qt.KeyboardModifier.ShiftModifier)
+        ):
+            difference = self._click_pos - self.mapToScene(event.pos())
+            self.setSceneRect(self.sceneRect().translated(difference.x(), difference.y()))
 
     def drawBackground(self, painter: QPainter, r: QRectF):
         """

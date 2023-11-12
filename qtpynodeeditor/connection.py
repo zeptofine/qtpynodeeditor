@@ -25,7 +25,7 @@ class Connection(QObject, Serializable):
 
         if port_a is None:
             raise ValueError("port_a is required")
-        elif port_a is port_b:
+        if port_a is port_b:
             raise ValueError("Cannot connect a port to itself")
 
         if port_a.port_type == PortType.input:
@@ -35,21 +35,19 @@ class Connection(QObject, Serializable):
             in_port = port_b
             out_port = port_a
 
-        if in_port is not None and out_port is not None:
-            if in_port.port_type == out_port.port_type:
-                raise exceptions.PortsOfSameTypeError("Cannot connect two ports of the same type")
+        if in_port is not None and out_port is not None and in_port.port_type == out_port.port_type:
+            raise exceptions.PortsOfSameTypeError("Cannot connect two ports of the same type")
 
         self._ports = {PortType.input: in_port, PortType.output: out_port}
 
-        if in_port is not None:
-            if in_port.connections:
-                (conn,) = in_port.connections
-                existing_in, existing_out = conn.ports
-                if existing_in == in_port and existing_out == out_port:
-                    raise exceptions.PortsAlreadyConnectedError("Specified ports already connected")
-                raise exceptions.MultipleInputConnectionError(
-                    f"Maximum one connection per input port (existing: {conn})"
-                )
+        if in_port is not None and in_port.connections:
+            (conn,) = in_port.connections
+            existing_in, existing_out = conn.ports
+            if existing_in == in_port and existing_out == out_port:
+                raise exceptions.PortsAlreadyConnectedError("Specified ports already connected")
+            raise exceptions.MultipleInputConnectionError(
+                f"Maximum one connection per input port (existing: {conn})"
+            )
 
         if in_port and out_port:
             self._required_port = PortType.none
@@ -64,20 +62,20 @@ class Connection(QObject, Serializable):
         self._connection_geometry = ConnectionGeometry(style)
         self._graphics_object = None
 
-    def _cleanup(self):
+    def cleanup(self):
         if self.is_complete:
             self.connection_made_incomplete.emit(self)
 
         self.propagate_empty_data()
         self.last_hovered_node = None
 
-        for port_type, port in self.valid_ports.items():
+        for port in self.valid_ports.values():
             if port.node.graphics_object is not None:
                 port.node.graphics_object.update()
             self._ports[port] = None
 
         if self._graphics_object is not None:
-            self._graphics_object._cleanup()
+            self._graphics_object.cleanup()
             self._graphics_object = None
 
     @property
@@ -96,18 +94,18 @@ class Connection(QObject, Serializable):
         if not in_port and not out_port:
             return {}
 
-        connection_json = dict(
-            in_id=in_port.node.id,
-            in_index=in_port.index,
-            out_id=out_port.node.id,
-            out_index=out_port.index,
-        )
+        connection_json = {
+            "in_id": in_port.node.id,
+            "in_index": in_port.index,
+            "out_id": out_port.node.id,
+            "out_index": out_port.index,
+        }
 
         if self._converter:
 
             def get_type_json(type: PortType):
                 node_type = self.data_type(type)
-                return dict(id=node_type.id, name=node_type.name)
+                return {"id": node_type.id, "name": node_type.name}
 
             connection_json["converter"] = {
                 "in": get_type_json(PortType.input),
@@ -220,7 +218,7 @@ class Connection(QObject, Serializable):
         """
         return self._connection_geometry
 
-    def get_node(self, port_type: PortType) -> typing.Optional[Node]:
+    def get_node(self, port_type: PortType) -> Node | None:
         """
         Get node
 
@@ -301,7 +299,7 @@ class Connection(QObject, Serializable):
             return ports[valid_type].data_type
 
     @property
-    def type_converter(self) -> typing.Optional[TypeConverter]:
+    def type_converter(self) -> TypeConverter | None:
         """
         The type converter used for the connection.
 

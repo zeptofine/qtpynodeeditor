@@ -12,10 +12,11 @@ def _get_qcolor(style_dict, key):
         return QColor()
 
     name_or_list = style_dict[key]
-    if isinstance(name_or_list, list):
-        color = QColor(*name_or_list)
-    else:
-        color = QColor(name_or_list)
+    if not isinstance(name_or_list, list):
+        name_or_list = [name_or_list]
+
+    color = QColor(*name_or_list)
+
     logger.debug("Loaded color %s = %s -> %d %d %d %d", key, name_or_list, *color.getRgb())
     return color
 
@@ -75,8 +76,8 @@ class Style:
         """
         if isinstance(json_style, dict):
             return json_style
-        else:
-            return json.loads(json_style)
+
+        return json.loads(json_style)
 
 
 class FlowViewStyle(Style):
@@ -154,7 +155,7 @@ class ConnectionStyle(Style):
         self.point_diameter = float(style["PointDiameter"])
         self.use_data_defined_colors = bool(style["UseDataDefinedColors"])
 
-    def get_normal_color(self, type_id: str = None) -> QColor:
+    def get_normal_color(self, type_id: str | None = None) -> QColor:
         """
         Normal color
 

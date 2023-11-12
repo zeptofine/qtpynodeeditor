@@ -30,8 +30,9 @@ class NaiveDataModel(NodeDataModel):
     def out_data(self, port_index):
         if port_index == 0:
             return MyNodeData()
-        elif port_index == 1:
+        if port_index == 1:
             return SimpleNodeData()
+        return None
 
     def set_in_data(self, node_data, port):
         ...

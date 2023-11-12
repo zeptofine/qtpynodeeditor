@@ -60,7 +60,7 @@ class NodeGraphicsObject(QGraphicsObject):
         self.xChanged.connect(on_move)
         self.yChanged.connect(on_move)
 
-    def _cleanup(self):
+    def cleanup(self):
         if self._scene is not None:
             self._scene.removeItem(self)
             self._scene = None

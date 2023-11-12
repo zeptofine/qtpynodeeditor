@@ -43,8 +43,8 @@ class NodeData:
 
 
 class NodeDataModel(Serializable, QObject):
-    name: Optional[str] = None
-    caption: Optional[str] = None
+    name: str | None = None
+    caption: str | None = None
     caption_visible = True
     num_ports = {
         PortType.input: 1,
@@ -113,18 +113,16 @@ class NodeDataModel(Serializable, QObject):
                 # Unset - use the default
                 return default
 
-            if valid_type is not None:
-                if isinstance(current, valid_type):
-                    # Fill in the dictionary with the user-provided value
-                    return current
+            if valid_type is not None and isinstance(current, valid_type):
+                # Fill in the dictionary with the user-provided value
+                return current
 
-            if attr == "data_type" and inspect.isclass(current):
-                if issubclass(current, NodeData):
-                    return current.data_type
+            if attr == "data_type" and inspect.isclass(current) and issubclass(current, NodeData):
+                return current.data_type
 
             if inspect.ismethod(current) or inspect.isfunction(current):
                 raise ValueError(
-                    f"{attr} should not be a function; saw: {current}\n" "Did you forget a @property decorator?" ""
+                    f"{attr} should not be a function; saw: {current}\nDid you forget a @property decorator?"
                 )
 
             try:
@@ -168,9 +166,11 @@ class NodeDataModel(Serializable, QObject):
                         reasons.append(f"Port type key {attr}[{port_type!r}] missing")
                         continue
 
-                for i in range(num_ports[port_type]):
-                    if i not in dct[port_type]:
-                        reasons.append(f"Port key {attr}[{port_type!r}][{i}] missing")
+                reasons.extend(
+                    f"Port key {attr}[{port_type!r}][{i}] missing"
+                    for i in range(num_ports[port_type])
+                    if i not in dct[port_type]
+                )
 
         if reasons:
             reason_text = "\n".join(f"* {reason}" for reason in reasons)
