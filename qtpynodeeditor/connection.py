@@ -68,8 +68,10 @@ class Connection(QObject, Serializable):
         self._connection_geometry = ConnectionGeometry(style)
         self._graphics_object = None
 
-        if in_port is not None:
-            in_port.model.data_updated.connect(lambda: self.data_transfered.emit())
+        # if in_port is not None:
+        #     in_port.model.data_updated.connect(lambda: self.data_transfered.emit())
+        if out_port is not None:
+            out_port.model.data_updated.connect(lambda: self.data_transfered.emit())
 
     def cleanup(self):
         if self.is_complete:
