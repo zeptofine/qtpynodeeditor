@@ -1,9 +1,11 @@
+import time
 import typing
 
-from qtpy.QtCore import QRectF
-from qtpy.QtGui import QPainter, QPainterPath
+from qtpy.QtCore import Property, QObject, QPropertyAnimation, QRectF, Signal
+from qtpy.QtGui import QColor, QPainter, QPainterPath
 from qtpy.QtWidgets import (
     QGraphicsBlurEffect,
+    QGraphicsColorizeEffect,
     QGraphicsItem,
     QGraphicsObject,
     QGraphicsSceneHoverEvent,
@@ -24,7 +26,7 @@ debug_drawing = False
 
 
 class ConnectionGraphicsObject(QGraphicsObject):
-    def __init__(self, scene, connection):
+    def __init__(self, scene, connection: "Connection"):
         """
         connection_graphics_object
 
@@ -38,6 +40,17 @@ class ConnectionGraphicsObject(QGraphicsObject):
         self._connection = connection
         self._geometry = connection.geometry
         self._style = connection.style.connection
+        self._connection.data_transfered.connect(self.on_transfer)
+
+        self.effect = QGraphicsColorizeEffect()
+        self.effect.setColor(QColor("white"))
+        self.effect_strength = 0
+        self.setGraphicsEffect(self.effect)
+        anim = QPropertyAnimation(self, b"effect_strength")
+        anim.setStartValue(1)
+        anim.setEndValue(0)
+        anim.setDuration(100)
+        self.anim = anim
 
         self._scene.addItem(self)
         self.setFlag(QGraphicsItem.ItemIsMovable, True)
@@ -232,12 +245,21 @@ class ConnectionGraphicsObject(QGraphicsObject):
         self._scene.connection_hover_left.emit(self.connection)
         event.accept()
 
+    def on_transfer(self):
+        print(f"transferred {time.time()}")
+        self.anim.start()
+        # self.effect_strength = 1
+
     def add_graphics_effect(self):
         effect = QGraphicsBlurEffect()
         effect.setBlurRadius(5)
         self.setGraphicsEffect(effect)
 
-        # effect = QGraphicsDropShadowEffect()
-        # effect = ConnectionBlurEffect(self)
-        # effect.setOffset(4, 4)
-        # effect.setColor(QColor(Qt.gray).darker(800))
+    @Property(float)
+    def effect_strength(self):
+        return self._effect_strength
+
+    @effect_strength.setter
+    def effect_strength(self, value):
+        self._effect_strength = value
+        self.effect.setStrength(value)

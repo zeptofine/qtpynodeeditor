@@ -1,6 +1,7 @@
+import time
 import uuid
 
-from qtpy.QtCore import QObject, Signal
+from qtpy.QtCore import QObject, QPropertyAnimation, Signal
 
 from . import exceptions
 from .base import Serializable
@@ -17,6 +18,7 @@ class Connection(QObject, Serializable):
     connection_completed = Signal(QObject)
     connection_made_incomplete = Signal(QObject)
     updated = Signal(QObject)
+    data_transfered = Signal()
 
     def __init__(
         self,
@@ -65,6 +67,9 @@ class Connection(QObject, Serializable):
         self._style = style
         self._connection_geometry = ConnectionGeometry(style)
         self._graphics_object = None
+
+        if in_port is not None:
+            in_port.model.data_updated.connect(lambda: self.data_transfered.emit())
 
     def cleanup(self):
         if self.is_complete:
