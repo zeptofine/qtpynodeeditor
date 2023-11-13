@@ -331,9 +331,9 @@ class NodeDataModel(Serializable, QObject):
         """
         ...
 
-    def out_data(self, port: int) -> NodeData:
+    def out_data(self, port: int) -> NodeData | None:
         """
-        Out data
+        Out data. If None is returned, then nothing will be propagated.
 
         Parameters
         ----------
@@ -341,7 +341,7 @@ class NodeDataModel(Serializable, QObject):
 
         Returns
         -------
-        value : NodeData
+        NodeData | None
         """
         ...
 
