@@ -1,5 +1,5 @@
 import inspect
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from dataclasses import dataclass, field
 from typing import Optional, TypeVar
 
@@ -175,15 +175,6 @@ class NodeDataModel(Serializable, QObject):
 
             setattr(cls, attr, new_dict(default))
 
-        cls._port_caption = new_dict("")
-        if cls.caption_override is not None:
-            # captions = {}
-            if cls.caption_override.inputs is not None:
-                cls._port_caption[PortType.input] = cls.caption_override.inputs
-
-            if cls.caption_override.outputs is not None:
-                cls._port_caption[PortType.output] = cls.caption_override.outputs
-
         all_types = cls.all_data_types
         data_types = cls.data_types
         if all_types is not None and data_types is not None:
@@ -195,7 +186,25 @@ class NodeDataModel(Serializable, QObject):
         if data_types is not None:
             cls._data_type = {PortType.input: data_types.inputs, PortType.output: data_types.outputs}
 
-        fill_defaults("port_caption_visible", False)
+        cls._port_caption = new_dict(False)
+        visible: dict[PortType, dict[int, bool]] = {}
+        if cls.caption_override is not None:
+            inputs = set()
+            if cls.caption_override.inputs is not None:
+                cls._port_caption[PortType.input] = cls.caption_override.inputs
+                inputs.update(cls.caption_override.inputs)
+            visible[PortType.input] = {idx: idx in inputs for idx in cls._data_type[PortType.input]}
+
+            outputs = set()
+            if cls.caption_override.outputs is not None:
+                cls._port_caption[PortType.output] = cls.caption_override.outputs
+                outputs.update(cls.caption_override.outputs)
+            visible[PortType.output] = {idx: idx in outputs for idx in cls._data_type[PortType.output]}
+
+            cls.port_caption_visible = visible
+        else:
+            cls.port_caption_visible = new_dict(False)
+
         reasons = []
         for attr in ("_data_type", "_port_caption", "port_caption_visible"):
             try:
