@@ -142,7 +142,7 @@ class FlowView(QGraphicsView):
         tree_view_action.setDefaultWidget(tree_view)
         model_menu.addAction(tree_view_action)
 
-        top_level_items = {}
+        top_level_items: dict[str, QTreeWidgetItem] = {}
         for cat in self._scene.registry.categories():
             item = QTreeWidgetItem(tree_view)
             item.setText(0, cat)
@@ -178,6 +178,15 @@ class FlowView(QGraphicsView):
         tree_view.itemClicked.connect(click_handler)
 
         # Setup filtering
+        filter_handler = self._get_filter_handler(top_level_items)
+
+        txt_box.textChanged.connect(filter_handler)
+
+        # make sure the text box gets focus so the user doesn't have to click on it
+        txt_box.setFocus()
+        return model_menu
+
+    def _get_filter_handler(self, top_level_items: dict[str, QTreeWidgetItem]):
         def filter_handler(text):
             for top_lvl_item in top_level_items.values():
                 for i in range(top_lvl_item.childCount()):
@@ -185,11 +194,7 @@ class FlowView(QGraphicsView):
                     model_name = child.data(0, Qt.ItemDataRole.UserRole)
                     child.setHidden(text not in model_name)
 
-        txt_box.textChanged.connect(filter_handler)
-
-        # make sure the text box gets focus so the user doesn't have to click on it
-        txt_box.setFocus()
-        return model_menu
+        return filter_handler
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         """
