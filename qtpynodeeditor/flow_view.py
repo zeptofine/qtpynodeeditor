@@ -1,5 +1,6 @@
 import logging
 import math
+from collections.abc import Callable
 
 from qtpy.QtCore import QLineF, QPoint, QRectF, Qt
 from qtpy.QtGui import QContextMenuEvent, QKeyEvent, QKeySequence, QMouseEvent, QPainter, QPen, QShowEvent, QWheelEvent
@@ -186,7 +187,23 @@ class FlowView(QGraphicsView):
         txt_box.setFocus()
         return model_menu
 
-    def _get_filter_handler(self, top_level_items: dict[str, QTreeWidgetItem]):
+    def _get_filter_handler(self, top_level_items: dict[str, QTreeWidgetItem]) -> Callable[[str], None]:
+        """
+        Gets a filter handler that is called when the
+        filter in the context menu changes
+
+
+        Parameters
+        ----------
+        top_level_items : dict[str, QTreeWidgetItem]
+            The category tree of items
+
+        Returns
+        -------
+        Callable[[str], None]
+            The filter function. hides and reveals children when applicable.
+        """
+
         def filter_handler(text):
             for top_lvl_item in top_level_items.values():
                 for i in range(top_lvl_item.childCount()):
