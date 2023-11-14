@@ -71,7 +71,12 @@ class Connection(QObject, Serializable):
         # if in_port is not None:
         #     in_port.model.data_updated.connect(lambda: self.data_transfered.emit())
         if out_port is not None:
-            out_port.model.data_updated.connect(lambda: self.data_transfered.emit())
+            out_port.model.data_updated.connect(self.check_transferred)
+
+    def check_transferred(self, idx: int):
+        output = self._ports[PortType.output]
+        if output is not None and output.index == idx:
+            self.data_transfered.emit()
 
     def cleanup(self):
         if self.is_complete:
